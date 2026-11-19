@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}QandA{% endblock %}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+<body>
+
+	<header>
+        	<h1>QandA</h1>
+        	<p>Plataforma de preguntas y respuestas</p>
+    	</header>
+
+    	<main>
+        	{% block content %}{% endblock %}
+    	</main>
+
+    	<footer>
+        	<p>Proyecto de Ingeniería de Software 1 - 2026</p>
+    	</footer>
+
+</body>
+</html>	
