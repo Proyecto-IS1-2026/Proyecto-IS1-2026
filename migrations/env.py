@@ -17,9 +17,7 @@ def include_name(name, type_, parent_names):
 
 def run_migrations_offline():
     context.configure(
-        url=Config.DATABASE_URL.render_as_string(
-            hide_password=False
-        ),
+        url=Config.DATABASE_URL.render_as_string(hide_password=False),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},

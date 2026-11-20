@@ -2,7 +2,6 @@ from sqlalchemy import Column, ForeignKey, Table, Uuid
 
 from .base import Base
 
-
 pregunta_etiqueta = Table(
     "pregunta_etiqueta",
     Base.metadata,
