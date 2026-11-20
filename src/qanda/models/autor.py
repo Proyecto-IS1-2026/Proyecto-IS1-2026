@@ -1,5 +1,5 @@
-
 import uuid
+from typing import ClassVar
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -10,22 +10,13 @@ from .base import Base
 class Autor(Base):
     __tablename__ = "autor"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True,
-        default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
 
-    nombre: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False
-    )
+    nombre: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    tipo: Mapped[str] = mapped_column(
-        String(20),
-        nullable=False
-    )
+    tipo: Mapped[str] = mapped_column(String(20), nullable=False)
 
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict[str, object]] = {
         "polymorphic_on": tipo,
-        "polymorphic_abstract": True
+        "polymorphic_abstract": True,
     }

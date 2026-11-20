@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -13,17 +14,17 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
+if TYPE_CHECKING:
+    from .autor import Autor
+    from .pregunta import Pregunta
+
 
 class Respuesta(Base):
     __tablename__ = "respuesta"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
 
-    cuerpo: Mapped[str] = mapped_column(
-        Text, nullable=False
-    )
+    cuerpo: Mapped[str] = mapped_column(Text, nullable=False)
 
     fecha_public: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -48,8 +49,6 @@ class Respuesta(Base):
         nullable=False,
     )
 
-    pregunta: Mapped["Pregunta"] = relationship(
-        back_populates="respuestas"
-    )
+    pregunta: Mapped["Pregunta"] = relationship(back_populates="respuestas")
 
     autor: Mapped["Autor"] = relationship()
