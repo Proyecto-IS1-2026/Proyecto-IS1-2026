@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ pregunta.titulo }} - QandA{% endblock %}
+{% block content %}
+
+<article>
+
+    <h2>{{ pregunta.titulo }}</h2>
+
+    <p>{{ pregunta.cuerpo }}</p>
+
+    <p>
+        Autor: {{ pregunta.autor.nombre }}
+    </p>
+
+    <p>
+        Categoría: {{ pregunta.categoria.nombre }}
+    </p>
+
+    <p>
+        Fecha: {{ pregunta.fecha_public }}
+    </p>
+
+</article>
+
+<hr>
+
+<h3>Respuestas</h3>
+
+{% for respuesta in respuestas %}
+
+    <article>
+
+        <p>{{ respuesta.cuerpo }}</p>
+
+        <p>
+            Autor: {{ respuesta.autor.nombre }}
+        </p>
+
+        <p>
+            Fecha: {{ respuesta.fecha_public }}
+        </p>
+
+        {% if respuesta.aceptacion %}
+
+            <p>
+                <strong>Respuesta aceptada</strong>
+            </p>
+
+        {% endif %}
+
+        {% if current_user.is_authenticated
+              and current_user.id == pregunta.autor_id
+              and not respuesta.aceptacion %}
+
+            <form method="POST"
+                  action="{{ url_for(
+                      'web.aceptar_respuesta',
+                      pregunta_id=pregunta.id,
+                      respuesta_id=respuesta.id
+                  ) }}">
+
+                <button type="submit">
+                    Aceptar respuesta
+                </button>
+
+            </form>
+
+        {% endif %}
+
+    </article>
+
+    <hr>
+
+{% else %}
+
+    <p>Esta pregunta todavía no tiene respuestas.</p>
+
+{% endfor %}
+
+
+{% if current_user.is_authenticated %}
+
+    <h3>Publicar una respuesta</h3>
+
+    <form method="POST"
+          action="{{ url_for(
+              'web.responder_pregunta',
+              pregunta_id=pregunta.id
+          ) }}">
+
+        <div>
+
+            <label for="cuerpo">Tu respuesta</label>
+
+            <textarea
+                id="cuerpo"
+                name="cuerpo"
+                rows="5"
+                required
+            ></textarea>
+
+        </div>
+
+        <button type="submit">
+            Publicar respuesta
+        </button>
+
+    </form>
+
+{% else %}
+
+    <p>
+        <a href="{{ url_for('auth.login') }}">
+            Iniciá sesión
+        </a>
+        para responder esta pregunta.
+    </p>
+
+{% endif %}
+
+{% endblock %}

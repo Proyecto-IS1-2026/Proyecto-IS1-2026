@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Moderación - QandA{% endblock %}
+{% block content %}
+
+<h2>Moderación de contenido</h2>
+
+<h3>Preguntas publicadas</h3>
+
+{% for pregunta in preguntas %}
+
+    <article>
+
+        <h4>{{ pregunta.titulo }}</h4>
+
+        <p>{{ pregunta.cuerpo }}</p>
+
+        <p>
+            Autor: {{ pregunta.autor.nombre }}
+        </p>
+
+        <p>
+            Fecha: {{ pregunta.fecha_public }}
+        </p>
+
+        <form method="POST"
+              action="{{ url_for(
+                  'admin.eliminar_pregunta',
+                  pregunta_id=pregunta.id
+              ) }}">
+
+            <button type="submit">
+                Eliminar pregunta
+            </button>
+
+        </form>
+
+    </article>
+
+    <hr>
+
+{% else %}
+
+    <p>No hay preguntas para moderar.</p>
+
+{% endfor %}
+
+{% endblock %}

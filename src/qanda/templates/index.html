@@ -1,23 +1,56 @@
-
 {% extends "base.html" %}
-
-{% block title %}
-    Inicio - QandA
-{% endblock %}
-
+{% block title %}Inicio - QandA{% endblock %}
 {% block content %}
 
-    <section class="welcome">
-        <h2>¡Bienvenido a QandA!</h2>
+<h2>Preguntas de la comunidad</h2>
+
+{% if current_user.is_authenticated %}
+
+    <p>
+        <a href="{{ url_for('web.crear_pregunta') }}">
+            Hacer una pregunta
+        </a>
+    </p>
+
+{% endif %}
+
+{% for pregunta in preguntas %}
+
+    <article>
+
+        <h3>
+            <a href="{{ url_for(
+                'web.detalle_pregunta',
+                pregunta_id=pregunta.id
+            ) }}">
+                {{ pregunta.titulo }}
+            </a>
+        </h3>
 
         <p>
-            Una plataforma para realizar preguntas,
-            compartir conocimientos y encontrar respuestas.
+            {{ pregunta.cuerpo|truncate(200) }}
         </p>
 
         <p>
-            Nuestra aplicación está en construcción.
+            Autor: {{ pregunta.autor.nombre }}
         </p>
-    </section>
+
+        <p>
+            Categoría: {{ pregunta.categoria.nombre }}
+        </p>
+
+        <p>
+            Fecha: {{ pregunta.fecha_public }}
+        </p>
+
+    </article>
+
+    <hr>
+
+{% else %}
+
+    <p>Todavía no hay preguntas publicadas.</p>
+
+{% endfor %}
 
 {% endblock %}

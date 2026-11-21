@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Nueva pregunta - QandA{% endblock %}
+{% block content %}
+
+<h2>Hacer una pregunta</h2>
+
+<form method="POST" action="{{ url_for('web.crear_pregunta') }}">
+
+    <div>
+        <label for="titulo">Título</label>
+
+        <input
+            type="text"
+            id="titulo"
+            name="titulo"
+            maxlength="255"
+            required
+        >
+    </div>
+
+    <div>
+        <label for="cuerpo">Descripción</label>
+
+        <textarea
+            id="cuerpo"
+            name="cuerpo"
+            rows="8"
+            required
+        ></textarea>
+    </div>
+
+    <div>
+        <label for="categoria_id">Categoría</label>
+
+        <select
+            id="categoria_id"
+            name="categoria_id"
+            required
+        >
+
+            <option value="">
+                Seleccioná una categoría
+            </option>
+
+            {% for categoria in categorias %}
+
+                <option value="{{ categoria.id }}">
+                    {{ categoria.nombre }}
+                </option>
+
+            {% endfor %}
+
+        </select>
+    </div>
+
+    <button type="submit">
+        Publicar pregunta
+    </button>
+
+</form>
+
+{% endblock %}
