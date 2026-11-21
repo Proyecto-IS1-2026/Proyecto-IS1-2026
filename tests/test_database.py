@@ -1,8 +1,10 @@
+
 import uuid
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from qanda import create_app
+from qanda.extensions import cargar_usuario
 from qanda.models import Autor, Usuario
 
 
@@ -30,6 +32,17 @@ def test_crear_usuario():
 
                 assert session.get(Usuario, usuario_id) is not None
                 assert session.get(Autor, usuario_id) is not None
+
+            app.extensions["db_session_factory"] = sessionmaker(
+                bind=conexion,
+                expire_on_commit=False,
+            )
+
+            with app.app_context():
+                usuario_recuperado = cargar_usuario(str(usuario_id))
+
+                assert usuario_recuperado is not None
+                assert usuario_recuperado.id == usuario_id
 
         finally:
             transaccion.rollback()
@@ -92,3 +105,12 @@ def test_relaciones_pregunta():
 
         finally:
             transaccion.rollback()
+
+
+def test_cargar_usuario_con_uuid_invalido():
+    app = create_app()
+
+    with app.app_context():
+        usuario = cargar_usuario("esto-no-es-un-uuid")
+
+        assert usuario is None

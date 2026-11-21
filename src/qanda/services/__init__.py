@@ -5,9 +5,9 @@ from .estrategia_generacion import EstrategiaGeneracion
 from .sra import SRA
 
 __all__ = [
+    "SRA",
     "EstratGemini",
     "EstratModLocal",
     "EstratOpenAI",
     "EstrategiaGeneracion",
-    "SRA",
 ]
