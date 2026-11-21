@@ -4,11 +4,11 @@ import pytest
 
 from qanda.models import Pregunta
 from qanda.services import (
+    SRA,
+    EstrategiaGeneracion,
     EstratGemini,
     EstratModLocal,
     EstratOpenAI,
-    EstrategiaGeneracion,
-    SRA,
 )
 
 

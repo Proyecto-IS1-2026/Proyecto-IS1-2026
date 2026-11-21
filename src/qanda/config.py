@@ -1,9 +1,14 @@
 import os
 
+from dotenv import load_dotenv
 from sqlalchemy.engine import URL
+
+load_dotenv()
 
 
 class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
     DATABASE_URL = URL.create(
         drivername="postgresql+psycopg",
         username=os.getenv("DB_USER", "is1_app"),
