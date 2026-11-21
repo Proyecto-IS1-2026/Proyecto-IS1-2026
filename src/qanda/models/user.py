@@ -1,5 +1,6 @@
 import uuid
 from typing import ClassVar
+
 from werkzeug.security import (
     generate_password_hash,
     check_password_hash
@@ -24,6 +25,16 @@ class Usuario(Autor):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    rol: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        default="GENERAL",
+    )
+
+    __mapper_args__: ClassVar[dict[str, object]] = {
+        "polymorphic_identity": "usuario"
+    }
 
     # Registra los datos del usuario
     def registrarse(self, nombre, email, password):

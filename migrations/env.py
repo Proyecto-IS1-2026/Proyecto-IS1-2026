@@ -37,6 +37,7 @@ def run_migrations_online():
 
     with engine.connect() as connection:
         context.configure(
+	    version_table_schema="is1",
             connection=connection,
             target_metadata=target_metadata,
             include_schemas=True,
