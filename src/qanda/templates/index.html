@@ -6,11 +6,15 @@
 
 {% if current_user.is_authenticated %}
 
-    <p>
-        <a href="{{ url_for('web.crear_pregunta') }}">
-            Hacer una pregunta
-        </a>
-    </p>
+    {% if endpoint_existe('web.crear_pregunta') %}
+
+        <p>
+            <a href="{{ url_for('web.crear_pregunta') }}">
+                Hacer una pregunta
+            </a>
+        </p>
+
+    {% endif %}
 
 {% endif %}
 

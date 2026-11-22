@@ -33,9 +33,13 @@
 
             {% if current_user.is_authenticated %}
 
-                <a href="{{ url_for('web.crear_pregunta') }}">
-                    Nueva pregunta
-                </a>
+                {% if endpoint_existe('web.crear_pregunta') %}
+
+                    <a href="{{ url_for('web.crear_pregunta') }}">
+                        Nueva pregunta
+                    </a>
+
+                {% endif %}
 
                 {% if current_user.rol == 'ADMIN' %}
 
