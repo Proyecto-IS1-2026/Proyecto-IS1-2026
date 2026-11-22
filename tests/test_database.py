@@ -1,5 +1,7 @@
 
 import uuid
+import pytest
+from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -114,3 +116,71 @@ def test_cargar_usuario_con_uuid_invalido():
         usuario = cargar_usuario("esto-no-es-un-uuid")
 
         assert usuario is None
+
+
+def test_rol_invalido():
+    app = create_app()
+    engine = app.extensions["db_engine"]
+
+    with engine.connect() as conexion:
+        transaccion = conexion.begin()
+
+        try:
+            with Session(bind=conexion) as session:
+                usuario = Usuario(
+                    nombre="Usuario de prueba",
+                    email=f"test-{uuid.uuid4().hex}@example.com",
+                    password_hash="hash_de_prueba",
+                    rol="INVITADO",
+                )
+
+                session.add(usuario)
+
+                with pytest.raises(IntegrityError) as error:
+                    session.flush()
+
+                assert (
+                    error.value.orig.diag.constraint_name
+                    == "ck_usuario_rol"
+                )
+
+        finally:
+            transaccion.rollback()
+
+
+def test_email_duplicado():
+    app = create_app()
+    engine = app.extensions["db_engine"]
+
+    with engine.connect() as conexion:
+        transaccion = conexion.begin()
+
+        try:
+            with Session(bind=conexion) as session:
+                email = f"test-{uuid.uuid4().hex}@example.com"
+
+                usuario1 = Usuario(
+                    nombre="Usuario 1",
+                    email=email,
+                    password_hash="hash_de_prueba",
+                    rol="GENERAL",
+                )
+
+                session.add(usuario1)
+                session.flush()
+
+                usuario2 = Usuario(
+                    nombre="Usuario 2",
+                    email=email,
+                    password_hash="hash_de_prueba",
+                    rol="GENERAL",
+                )
+
+                session.add(usuario2)
+
+                with pytest.raises(IntegrityError):
+                    session.flush()
+
+        finally:
+            if transaccion.is_active:
+                transaccion.rollback()
