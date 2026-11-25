@@ -14,16 +14,21 @@ from qanda.auth import auth_bp
 from qanda.models import Usuario
 
 
+# Ruta encargada de registrar nuevos usuarios en el sistema.
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+
+    # Si la solicitud es GET muestra el formulario de registro.
     if request.method == "GET":
         return render_template("auth/register.html")
 
+    # Obtiene los datos ingresados por el usuario en el formulario.
     nombre = request.form.get("nombre", "")
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
     confirmar_password = request.form.get("confirmar_password", "")
 
+    # Comprueba que las dos contraseñas ingresadas coincidan.
     if password != confirmar_password:
         flash("Las contraseñas no coinciden.", "error")
         return redirect(url_for("auth.register"))
@@ -52,8 +57,11 @@ def register():
     return redirect(url_for("auth.login"))
 
 
+# Ruta encargada de permitir que los usuarios inicien sesión.
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+
+    # Si la solicitud es GET muestra el formulario de inicio de sesion.
     if request.method == "GET":
         return render_template("auth/login.html")
 
@@ -87,6 +95,7 @@ def login():
     return redirect(url_for("web.index"))
 
 
+# Ruta encargada de cerrar la sesión del usuario actual.
 @auth_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
