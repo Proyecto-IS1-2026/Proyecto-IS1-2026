@@ -79,3 +79,16 @@ HAVING COUNT(*) > 1;
 SELECT id, nombre, descrip
 FROM is1.categoria
 ORDER BY nombre;
+
+SELECT
+    p.titulo AS pregunta,
+    r.cuerpo AS respuesta,
+    a.nombre AS autor
+FROM is1.respuesta r
+JOIN is1.pregunta p ON r.pregunta_id = p.id
+JOIN is1.autor a ON r.autor_id = a.id;
+
+
+
+
+
