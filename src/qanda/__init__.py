@@ -1,3 +1,4 @@
+
 from flask import Flask
 
 from qanda.admin import admin_bp
@@ -10,7 +11,7 @@ from qanda.api import (
     respuestas as respuestas,
 )
 from qanda.auth import auth_bp
-from qanda.config import Config
+from qanda.config import obtener_configuracion
 from qanda.extensions import init_db, init_login
 from qanda.web import (
     main,  # noqa: F401
@@ -18,9 +19,13 @@ from qanda.web import (
 )
 
 
-def create_app():
+def create_app(config_class=None):
     app = Flask(__name__)
-    app.config.from_object(Config)
+
+    if config_class is None:
+        config_class = obtener_configuracion()
+
+    app.config.from_object(config_class)
 
     init_db(app)
     init_login(app)

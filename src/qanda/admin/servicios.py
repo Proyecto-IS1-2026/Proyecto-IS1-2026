@@ -1,6 +1,7 @@
 
 from qanda.models import Pregunta, Respuesta
 
+
 def eliminar_pregunta(session, pregunta: Pregunta, usuario) -> None:
     """
     Elimina una pregunta verificando antes que el usuario

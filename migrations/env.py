@@ -1,12 +1,15 @@
+
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-from qanda.config import Config
+from qanda.config import obtener_configuracion
 from qanda.models import Base
 
 config = context.config
 
 target_metadata = Base.metadata
+
+database_url = obtener_configuracion().DATABASE_URL
 
 
 def include_name(name, type_, parent_names):
@@ -17,7 +20,7 @@ def include_name(name, type_, parent_names):
 
 def run_migrations_offline():
     context.configure(
-        url=Config.DATABASE_URL.render_as_string(hide_password=False),
+        url=database_url.render_as_string(hide_password=False),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -31,24 +34,24 @@ def run_migrations_offline():
 
 def run_migrations_online():
     engine = create_engine(
-        Config.DATABASE_URL,
+        database_url,
         poolclass=pool.NullPool,
     )
 
-    with engine.connect() as connection:
-        context.configure(
-	    version_table_schema="is1",
-            connection=connection,
-            target_metadata=target_metadata,
-            include_schemas=True,
-            include_name=include_name,
-            compare_type=True,
-        )
+    try:
+        with engine.connect() as connection:
+            context.configure(
+                connection=connection,
+                target_metadata=target_metadata,
+                include_schemas=True,
+                include_name=include_name,
+                compare_type=True,
+            )
 
-        with context.begin_transaction():
-            context.run_migrations()
-
-    engine.dispose()
+            with context.begin_transaction():
+                context.run_migrations()
+    finally:
+        engine.dispose()
 
 
 if context.is_offline_mode():
