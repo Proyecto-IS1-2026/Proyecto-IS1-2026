@@ -21,8 +21,6 @@ dependencies = [
     "google-genai>=1.0.0",
 ]
 
-[project.scripts]
-proyecto-is1-2026 = "proyecto_is1_2026:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]
