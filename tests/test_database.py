@@ -6,12 +6,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from qanda import create_app
+from qanda.config import TestingConfig
 from qanda.extensions import cargar_usuario
 from qanda.models import Autor, Usuario
 
 
 def test_crear_usuario():
-    app = create_app()
+    app = create_app(TestingConfig)
     engine = app.extensions["db_engine"]
 
     with engine.connect() as conexion:
@@ -53,7 +54,7 @@ def test_crear_usuario():
 def test_relaciones_pregunta():
     from qanda.models import Categoria, Etiqueta, Pregunta, Respuesta
 
-    app = create_app()
+    app = create_app(TestingConfig)
     engine = app.extensions["db_engine"]
 
     with engine.connect() as conexion:
@@ -110,7 +111,7 @@ def test_relaciones_pregunta():
 
 
 def test_cargar_usuario_con_uuid_invalido():
-    app = create_app()
+    app = create_app(TestingConfig)
 
     with app.app_context():
         usuario = cargar_usuario("esto-no-es-un-uuid")
@@ -119,7 +120,7 @@ def test_cargar_usuario_con_uuid_invalido():
 
 
 def test_rol_invalido():
-    app = create_app()
+    app = create_app(TestingConfig)
     engine = app.extensions["db_engine"]
 
     with engine.connect() as conexion:
@@ -150,7 +151,7 @@ def test_rol_invalido():
 
 
 def test_email_duplicado():
-    app = create_app()
+    app = create_app(TestingConfig)
     engine = app.extensions["db_engine"]
 
     with engine.connect() as conexion:

@@ -1,3 +1,4 @@
+
 import uuid
 
 import pytest
@@ -6,14 +7,13 @@ from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash
 
 from qanda import create_app
+from qanda.config import TestingConfig
 from qanda.models import Usuario
 
 
 @pytest.fixture
 def app():
-    aplicacion = create_app()
-    aplicacion.config["TESTING"] = True
-    aplicacion.config["SECRET_KEY"] = "clave-de-prueba"
+    aplicacion = create_app(TestingConfig)
 
     engine = aplicacion.extensions["db_engine"]
     conexion = engine.connect()
@@ -30,6 +30,7 @@ def app():
 
     transaccion.rollback()
     conexion.close()
+    engine.dispose()
 
 
 @pytest.fixture

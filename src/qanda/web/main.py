@@ -1,8 +1,3 @@
-from flask import render_template
-
-from qanda.web import web_bp
-
-
 from uuid import UUID
 
 from flask import (
