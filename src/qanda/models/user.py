@@ -13,6 +13,7 @@ from .autor import Autor
 class Usuario(Autor, UserMixin):
     __tablename__ = "usuario"
 
+    # Restriccion que limita los roles permitidos a ADMIN y GENERAL.
     __table_args__ = (
         CheckConstraint(
             "rol IN ('ADMIN', 'GENERAL')",
@@ -20,22 +21,27 @@ class Usuario(Autor, UserMixin):
         ),
     )
 
+    # Clave primaria que tambien es clave foranea de la tabla Autor.
+    # Permite implementar la herencia entre ambas tablas.
     id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("is1.autor.id"),
         primary_key=True,
     )
 
+    # Correo electronico unico y obligatorio para cada usuario.
     email: Mapped[str] = mapped_column(
         String(255),
         unique=True,
         nullable=False,
     )
 
+    # Almacena el hash de la contraseña.
     password_hash: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )
 
+    # Define el rol del usuario que por defecto es GENERAL.
     rol: Mapped[str] = mapped_column(
         String(10),
         nullable=False,
@@ -46,6 +52,7 @@ class Usuario(Autor, UserMixin):
         "polymorphic_identity": "usuario",
     }
 
+    # Registra los datos del usuario y verifica que sean correctos.
     def registrarse(self, nombre, email, password):
         if not nombre or not email or not password:
             raise ValueError("Todos los campos son obligatorios")
@@ -65,6 +72,7 @@ class Usuario(Autor, UserMixin):
         if not self.rol:
             self.rol = "GENERAL"
 
+    # Verifica si la contraseña ingresada coincide con el hash almacenado.
     def autenticarse(self, password):
         if not password:
             raise ValueError("La contraseña es obligatoria")
@@ -74,6 +82,7 @@ class Usuario(Autor, UserMixin):
 
         return True
 
+    # Permite que el usuario cree una pregunta.
     def realizarPregunta(self, titulo, cuerpo, categoria):
         from .pregunta import Pregunta
 
