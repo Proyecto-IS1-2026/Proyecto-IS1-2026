@@ -4,6 +4,7 @@ from qanda.admin import admin_bp
 from qanda.api import (
     api_bp,
     health,  # noqa: F401
+    preguntas,  # noqa: F401
 )
 from qanda.auth import auth_bp
 from qanda.config import Config
