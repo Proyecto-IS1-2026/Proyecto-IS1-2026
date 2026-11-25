@@ -2,7 +2,8 @@
 
 from uuid import UUID
 
-from flask import current_app, jsonify, request, session as flask_session
+from flask import current_app, jsonify, request
+from flask import session as flask_session
 from flask_login import current_user
 from sqlalchemy import select
 

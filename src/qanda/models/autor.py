@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
 
+
 # Representa la entidad base de los autores del sistema.
 # Sirve como clase padre para otros modelos que comparten sus atributos.
 class Autor(Base):
