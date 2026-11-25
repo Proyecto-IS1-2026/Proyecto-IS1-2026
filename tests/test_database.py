@@ -1,8 +1,8 @@
 
 import uuid
+
 import pytest
 from sqlalchemy.exc import IntegrityError
-
 from sqlalchemy.orm import Session, sessionmaker
 
 from qanda import create_app
@@ -145,7 +145,8 @@ def test_rol_invalido():
                 )
 
         finally:
-            transaccion.rollback()
+            if transaccion.is_active:
+                transaccion.rollback()
 
 
 def test_email_duplicado():
