@@ -5,6 +5,7 @@ from qanda.api import (
     api_bp,
     health,  # noqa: F401
 )
+from qanda.api import respuestas  
 from qanda.auth import auth_bp
 from qanda.config import Config
 from qanda.extensions import init_db, init_login
