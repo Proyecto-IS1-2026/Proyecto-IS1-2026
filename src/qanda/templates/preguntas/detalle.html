@@ -17,7 +17,7 @@
     </p>
 
     <p>
-        Fecha: {{ pregunta.fecha_public }}
+        Fecha: {{ pregunta.fecha_public.strftime('%d/%m/%Y %H:%M') }}
     </p>
 
 </article>
@@ -37,7 +37,7 @@
         </p>
 
         <p>
-            Fecha: {{ respuesta.fecha_public }}
+            Fecha: {{ respuesta.fecha_public.strftime('%d/%m/%Y %H:%M') }}
         </p>
 
         {% if respuesta.aceptacion %}
