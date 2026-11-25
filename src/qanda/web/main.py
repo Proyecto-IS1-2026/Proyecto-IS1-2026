@@ -16,7 +16,7 @@ from flask import (
 from flask_login import current_user
 from sqlalchemy import select
 
-from qanda.models import Categoria, Pregunta, Usuario
+from qanda.models import Categoria, Etiqueta, Pregunta, Usuario
 from qanda.web import web_bp
 
 
@@ -35,6 +35,10 @@ def crear_pregunta():
     with factory() as db:
         categorias = db.scalars(
             select(Categoria).order_by(Categoria.nombre)
+        ).all()
+        
+        etiquetas = db.scalars(
+        select(Etiqueta).order_by(Etiqueta.nombre)
         ).all()
 
         if request.method == "POST":
@@ -71,7 +75,17 @@ def crear_pregunta():
                         autor=usuario,
                         categoria=categoria,
                     )
+                    for etiqueta_id in request.form.getlist("etiqueta_ids"):
+                        try:
+                            etiqueta_uuid = UUID(etiqueta_id)
+                        except ValueError:
+                            continue
 
+                        etiqueta = db.get(Etiqueta, etiqueta_uuid)
+
+                        if etiqueta is not None:
+                            pregunta.agregarEtiqueta(etiqueta)
+                            
                     db.add(pregunta)
                     db.commit()
 
@@ -79,6 +93,7 @@ def crear_pregunta():
                     return redirect(url_for("web.index"))
 
         return render_template(
-            "preguntas/crear.html",
-            categorias=categorias,
-        )
+        "preguntas/crear.html",
+        categorias=categorias,
+        etiquetas=etiquetas,
+    )

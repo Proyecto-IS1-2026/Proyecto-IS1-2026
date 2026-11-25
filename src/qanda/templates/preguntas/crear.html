@@ -53,9 +53,23 @@
         </select>
     </div>
 
+    <div>
+    <label for="etiqueta_ids">Etiquetas</label>
+
+    <select id="etiqueta_ids" name="etiqueta_ids" multiple>
+        {% for etiqueta in etiquetas %}
+            <option value="{{ etiqueta.id }}">
+                {{ etiqueta.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <small>Podés seleccionar varias etiquetas usando Ctrl + clic.</small>
+    </div>
+
     <button type="submit">
         Publicar pregunta
-    </button>
+    </button>      
 
 </form>
 
