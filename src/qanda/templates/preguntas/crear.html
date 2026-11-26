@@ -1,0 +1,95 @@
+
+{% extends "base.html" %}
+{% block title %}Nueva pregunta - QandA{% endblock %}
+{% block content %}
+
+<h2>Hacer una pregunta</h2>
+
+<form method="POST" action="{{ url_for('web.crear_pregunta') }}">
+
+    <div>
+        <label for="titulo">Título</label>
+        <input
+            type="text"
+            id="titulo"
+            name="titulo"
+            maxlength="255"
+            required
+        >
+    </div>
+
+    <div>
+        <label for="cuerpo">Descripción</label>
+        <textarea
+            id="cuerpo"
+            name="cuerpo"
+            rows="8"
+            required
+        ></textarea>
+    </div>
+
+    <div>
+        <label for="categoria_id">Categoría</label>
+
+        <select
+            id="categoria_id"
+            name="categoria_id"
+            required
+        >
+            <option value="">Seleccioná una categoría</option>
+
+            {% for categoria in categorias %}
+                <option value="{{ categoria.id }}">
+                    {{ categoria.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="etiqueta_ids">Etiquetas</label>
+
+        <select
+            id="etiqueta_ids"
+            name="etiqueta_ids"
+            multiple
+        >
+            {% for etiqueta in etiquetas %}
+                <option value="{{ etiqueta.id }}">
+                    {{ etiqueta.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <small>
+            Podés seleccionar varias etiquetas usando Ctrl + clic.
+            Seleccioná IA-help para solicitar ayuda automática.
+        </small>
+    </div>
+
+    <hr>
+
+    <h3>Asistencia mediante inteligencia artificial</h3>
+
+    <div>
+        <label for="proveedor_ia">Elegí tu IA</label>
+
+        <select id="proveedor_ia" name="proveedor_ia">
+            <option value="ninguna">No utilizar IA</option>
+            <option value="openai">ChatGPT (OpenAI)</option>
+            <option value="gemini">Gemini (Google)</option>
+        </select>
+
+        <small>
+            La IA solamente responderá si seleccionás también
+            la etiqueta IA-help.
+        </small>
+    </div>
+
+    <button type="submit">
+        Publicar pregunta
+    </button>
+
+</form>
+
+{% endblock %}

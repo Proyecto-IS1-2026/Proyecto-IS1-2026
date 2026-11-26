@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Administrar usuarios - QandA{% endblock %}
+{% block content %}
+
+<h2>Administración de usuarios</h2>
+
+<table>
+
+    <thead>
+
+        <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for usuario in usuarios %}
+
+            <tr>
+
+                <td>{{ usuario.nombre }}</td>
+
+                <td>{{ usuario.email }}</td>
+
+                <td>{{ usuario.rol }}</td>
+
+            </tr>
+
+        {% else %}
+
+            <tr>
+                <td colspan="3">
+                    No hay usuarios registrados.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

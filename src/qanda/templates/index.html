@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Inicio - QandA{% endblock %}
+{% block content %}
+
+<h2>Preguntas de la comunidad</h2>
+
+{% if current_user.is_authenticated %}
+
+    {% if endpoint_existe('web.crear_pregunta') %}
+
+        <p>
+            <a href="{{ url_for('web.crear_pregunta') }}">
+                Hacer una pregunta
+            </a>
+        </p>
+
+    {% endif %}
+
+{% endif %}
+
+{% for pregunta in preguntas %}
+
+    <article>
+
+        <h3>
+            <a href="{{ url_for(
+                'web.detalle_pregunta',
+                pregunta_id=pregunta.id
+            ) }}">
+                {{ pregunta.titulo }}
+            </a>
+        </h3>
+
+        <p>
+            {{ pregunta.cuerpo|truncate(200) }}
+        </p>
+
+        <p>
+            Autor: {{ pregunta.autor.nombre }}
+        </p>
+
+        <p>
+            Categoría: {{ pregunta.categoria.nombre }}
+        </p>
+
+        <p>
+            Fecha: {{ pregunta.fecha_public }}
+        </p>
+
+    </article>
+
+    <hr>
+
+{% else %}
+
+    <p>Todavía no hay preguntas publicadas.</p>
+
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,111 @@
+
+{% extends "base.html" %}
+
+{% block title %}Moderación - QandA{% endblock %}
+
+{% block content %}
+
+<h2>Moderación de contenido</h2>
+
+<h3>Preguntas publicadas</h3>
+
+{% for pregunta in preguntas %}
+
+    <article>
+
+        <h4>{{ pregunta.titulo }}</h4>
+
+        <p>{{ pregunta.cuerpo }}</p>
+
+        <p>
+            Autor: {{ pregunta.autor.nombre }}
+        </p>
+
+        <p>
+            Categoría: {{ pregunta.categoria.nombre }}
+        </p>
+
+        <p>
+            Fecha: {{ pregunta.fecha_public }}
+        </p>
+
+        <!-- Formulario para eliminar la pregunta -->
+        <form
+            method="POST"
+            action="{{ url_for(
+                'admin.eliminar_pregunta',
+                pregunta_id=pregunta.id
+            ) }}"
+            onsubmit="return confirm(
+                '¿Estás seguro de que querés eliminar esta pregunta y todas sus respuestas?'
+            );"
+        >
+
+            <button type="submit">
+                Eliminar pregunta
+            </button>
+
+        </form>
+
+        <hr>
+
+        <!-- Respuestas asociadas a la pregunta -->
+        <h5>Respuestas</h5>
+
+        {% for respuesta in pregunta.respuestas %}
+
+            <div>
+
+                <p>{{ respuesta.cuerpo }}</p>
+
+                <p>
+                    Autor: {{ respuesta.autor.nombre }}
+                </p>
+
+                <p>
+                    Fecha: {{ respuesta.fecha_public }}
+                </p>
+
+                {% if respuesta.aceptacion %}
+                    <p>Respuesta aceptada</p>
+                {% endif %}
+
+                <!-- Formulario para eliminar la respuesta -->
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'admin.eliminar_respuesta',
+                        respuesta_id=respuesta.id
+                    ) }}"
+                    onsubmit="return confirm(
+                        '¿Estás seguro de que querés eliminar esta respuesta?'
+                    );"
+                >
+
+                    <button type="submit">
+                        Eliminar respuesta
+                    </button>
+
+                </form>
+
+            </div>
+
+            <hr>
+
+        {% else %}
+
+            <p>Esta pregunta todavía no tiene respuestas.</p>
+
+        {% endfor %}
+
+    </article>
+
+    <hr>
+
+{% else %}
+
+    <p>No hay preguntas para moderar.</p>
+
+{% endfor %}
+
+{% endblock %}

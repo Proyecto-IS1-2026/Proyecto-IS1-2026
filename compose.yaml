@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_PROD_NAME:?Falta DB_PROD_NAME}
+      POSTGRES_USER: ${DB_PROD_USER:?Falta DB_PROD_USER}
+      POSTGRES_PASSWORD: ${DB_PROD_PASSWORD:?Falta DB_PROD_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      SECRET_KEY: ${SECRET_KEY:?Falta SECRET_KEY}
+      DB_PROD_NAME: ${DB_PROD_NAME:?Falta DB_PROD_NAME}
+      DB_PROD_USER: ${DB_PROD_USER:?Falta DB_PROD_USER}
+      DB_PROD_PASSWORD: ${DB_PROD_PASSWORD:?Falta DB_PROD_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME:?Falta ADMIN_NAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Falta ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Falta ADMIN_PASSWORD}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DB_HOST: db
+      DB_PORT: 5432
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && exec gunicorn --bind 0.0.0.0:8000 --workers 2 'qanda:create_app()'
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

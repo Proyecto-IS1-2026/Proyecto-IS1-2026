@@ -1,0 +1,56 @@
+"""Inicialización y configuración de las extensiones de Flask."""
+
+import uuid
+
+from flask import current_app
+from flask_login import LoginManager
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+# Se comparte el administrador de sesiones entre las instancias de Flask.
+login_manager = LoginManager()
+
+
+@login_manager.user_loader
+def cargar_usuario(user_id):
+    """Recupera un usuario a partir de su identificador de sesión.
+
+    Flask-Login utiliza esta función para reconstruir el usuario
+    autenticado en cada solicitud.
+    """
+    # La importación local evita dependencias circulares con los modelos.
+    from qanda.models import Usuario
+
+    try:
+        usuario_id = uuid.UUID(user_id)
+    except (ValueError, TypeError):
+        return None
+
+    session_factory = current_app.extensions["db_session_factory"]
+
+    with session_factory() as session:
+        return session.get(Usuario, usuario_id)
+
+
+def init_db(app):
+    """Inicializa el motor y la fábrica de sesiones de SQLAlchemy.
+
+    pool_pre_ping permite comprobar que las conexiones del pool
+    sigan activas antes de utilizarlas.
+    """
+    engine = create_engine(
+        app.config["DATABASE_URL"],
+        pool_pre_ping=True,
+    )
+
+    app.extensions["db_engine"] = engine
+    app.extensions["db_session_factory"] = sessionmaker(
+        bind=engine,
+        expire_on_commit=False,
+    )
+
+
+def init_login(app):
+    """Vincula Flask-Login con la aplicación y define la ruta de acceso."""
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"

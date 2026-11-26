@@ -10,15 +10,18 @@ requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.1",
     "flask>=3.1.3",
+    "flask-login>=0.6.3",
     "psycopg[binary]>=3.3.8",
+    "python-dotenv>=1.2.4",
     "scikit-learn>=1.9.1",
     "sqlalchemy>=2.1.8",
     "torch>=2.15.0",
     "torchvision>=0.29.2",
+    "openai>=2.0.0",
+    "google-genai>=1.0.0",
+    "gunicorn>=27.0.1",
 ]
 
-[project.scripts]
-proyecto-is1-2026 = "proyecto_is1_2026:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]
@@ -30,3 +33,13 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.17.4",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=qanda --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["qanda"]
+
+[tool.coverage.report]
+show_missing = true

@@ -1,0 +1,303 @@
+
+/* ==============================
+   CONFIGURACIÓN GENERAL
+============================== */
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #263a5b;
+    --primary-hover: #1b2c47;
+    --secondary: #4776b9;
+    --background: #f4f6fa;
+    --surface: #ffffff;
+    --text: #273449;
+    --muted: #718096;
+    --border: #e2e8f0;
+    --success: #198754;
+    --danger: #dc3545;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background-color: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* ==============================
+   ENCABEZADO Y NAVEGACIÓN
+============================== */
+
+header {
+    background-color: var(--primary);
+    color: white;
+    padding: 22px 35px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 30px;
+    letter-spacing: 0.5px;
+}
+
+header p {
+    margin: 3px 0 18px;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 9px 16px;
+    border-radius: 7px;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+nav a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+nav form {
+    margin: 0;
+}
+
+/* ==============================
+   CONTENIDO PRINCIPAL
+============================== */
+
+main {
+    max-width: 1050px;
+    min-height: 65vh;
+    margin: 35px auto;
+    padding: 20px;
+}
+
+h2 {
+    color: var(--primary);
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 27px;
+}
+
+h3 {
+    color: var(--primary);
+}
+
+h4 {
+    color: var(--primary);
+}
+
+/* ==============================
+   TARJETAS
+============================== */
+
+.welcome,
+article {
+    background-color: var(--surface);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.welcome {
+    padding: 40px;
+    text-align: center;
+}
+
+article {
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+article:hover {
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+article p {
+    color: #526174;
+}
+
+/* ==============================
+   BOTONES
+============================== */
+
+button {
+    background-color: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 11px 19px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+button:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Botones de eliminación */
+
+button.danger {
+    background-color: var(--danger);
+}
+
+button.danger:hover {
+    background-color: #b02a37;
+}
+
+/* ==============================
+   FORMULARIOS
+============================== */
+
+form {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background-color: white;
+    margin-bottom: 18px;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(71, 118, 185, 0.13);
+}
+
+textarea {
+    resize: vertical;
+}
+
+select[multiple] {
+    min-height: 120px;
+}
+
+/* ==============================
+   MENSAJES
+============================== */
+
+.success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    padding: 13px 16px;
+    border-radius: 7px;
+    margin-bottom: 18px;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #842029;
+    padding: 13px 16px;
+    border-radius: 7px;
+    margin-bottom: 18px;
+}
+
+/* ==============================
+   ENLACES
+============================== */
+
+a {
+    color: var(--secondary);
+}
+
+a:hover {
+    color: var(--primary);
+}
+
+/* ==============================
+   PIE DE PÁGINA
+============================== */
+
+footer {
+    text-align: center;
+    padding: 25px;
+    margin-top: 40px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    background-color: white;
+}
+
+/* ==============================
+   DISEÑO RESPONSIVE
+============================== */
+
+@media (max-width: 650px) {
+
+    header {
+        padding: 20px 15px;
+    }
+
+    header h1 {
+        font-size: 25px;
+    }
+
+    nav {
+        gap: 5px;
+    }
+
+    nav a {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    main {
+        margin: 20px auto;
+        padding: 12px;
+    }
+
+    .welcome {
+        padding: 25px 15px;
+    }
+
+    article {
+        padding: 18px;
+    }
+
+    h2 {
+        font-size: 23px;
+    }
+}
