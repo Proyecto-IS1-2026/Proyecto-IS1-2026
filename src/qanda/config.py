@@ -10,7 +10,7 @@ load_dotenv()
 def obtener_variable_obligatoria(nombre):
     valor = os.getenv(nombre)
 
-    if not valor:
+    if valor is None or not valor.strip():
         raise ValueError(
             f"La variable de entorno {nombre} es obligatoria."
         )
@@ -57,16 +57,28 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    pass
+    DEBUG = False
+    TESTING = False
+    SECRET_KEY = None
+    DATABASE_URL = None
 
 
 def obtener_configuracion():
     entorno = os.getenv("APP_ENV", "development").lower()
 
-    configuraciones = {
-        "development": DevelopmentConfig,
-        "testing": TestingConfig,
-    }
+    if entorno == "development":
+        DevelopmentConfig.DATABASE_URL = crear_database_url(
+            os.getenv("DB_NAME", "proyecto_is1_2026")
+        )
+
+        return DevelopmentConfig
+
+    if entorno == "testing":
+        TestingConfig.DATABASE_URL = crear_database_url(
+            os.getenv("DB_TEST_NAME", "proyecto_is1_2026_test")
+        )
+
+        return TestingConfig
 
     if entorno == "production":
         ProductionConfig.SECRET_KEY = obtener_variable_obligatoria(
@@ -87,7 +99,4 @@ def obtener_configuracion():
 
         return ProductionConfig
 
-    if entorno not in configuraciones:
-        raise ValueError(f"Entorno desconocido: {entorno}")
-
-    return configuraciones[entorno]
+    raise ValueError(f"Entorno desconocido: {entorno}")
