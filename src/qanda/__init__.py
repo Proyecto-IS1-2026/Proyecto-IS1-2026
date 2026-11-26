@@ -1,3 +1,4 @@
+import logging
 
 from flask import Flask
 
@@ -26,6 +27,8 @@ def create_app(config_class=None):
         config_class = obtener_configuracion()
 
     app.config.from_object(config_class)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info("Iniciando aplicacion QandA")
 
     init_db(app)
     init_login(app)
@@ -40,5 +43,7 @@ def create_app(config_class=None):
         return {
             "endpoint_existe": lambda nombre: nombre in app.view_functions
         }
+
+    app.logger.info("Aplicacion QandA inicializada correctamente")
 
     return app
