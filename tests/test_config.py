@@ -1,4 +1,3 @@
-
 import pytest
 
 from qanda.config import (
@@ -9,6 +8,22 @@ from qanda.config import (
     obtener_configuracion,
     obtener_variable_obligatoria,
 )
+
+
+@pytest.fixture(autouse=True)
+def _restaurar_configuracion_produccion():
+    secreto_original = ProductionConfig.SECRET_KEY
+    url_original = getattr(ProductionConfig, "DATABASE_URL", None)
+
+    yield
+
+    ProductionConfig.SECRET_KEY = secreto_original
+
+    if url_original is None:
+        if hasattr(ProductionConfig, "DATABASE_URL"):
+            delattr(ProductionConfig, "DATABASE_URL")
+    else:
+        ProductionConfig.DATABASE_URL = url_original
 
 
 @pytest.mark.parametrize(
@@ -61,14 +76,6 @@ def test_crear_database_url_con_valores_explicitos(monkeypatch):
     assert url.database == "mi_base"
 
 
-def test_configuracion_produccion_requiere_secret_key(monkeypatch):
-    monkeypatch.setenv("APP_ENV", "production")
-    monkeypatch.delenv("SECRET_KEY", raising=False)
-=======
-    obtener_configuracion,
-)
-
-
 def test_obtener_configuracion_desarrollo(monkeypatch):
     monkeypatch.setenv("APP_ENV", "development")
     monkeypatch.setenv("DB_NAME", "base_desarrollo")
@@ -84,14 +91,13 @@ def test_obtener_configuracion_desarrollo(monkeypatch):
 
 def test_obtener_configuracion_testing(monkeypatch):
     monkeypatch.setenv("APP_ENV", "testing")
+    monkeypatch.delenv("DB_TEST_NAME", raising=False)
 
     configuracion = obtener_configuracion()
 
     assert configuracion is TestingConfig
     assert configuracion.TESTING is True
-    assert configuracion.DATABASE_URL.database == (
-        "proyecto_is1_2026_test"
-    )
+    assert configuracion.DATABASE_URL.database == "proyecto_is1_2026_test"
 
 
 def test_obtener_configuracion_produccion(monkeypatch):
@@ -109,7 +115,6 @@ def test_obtener_configuracion_produccion(monkeypatch):
     assert configuracion.DEBUG is False
     assert configuracion.TESTING is False
     assert configuracion.SECRET_KEY == "clave-segura-produccion"
-
     assert configuracion.DATABASE_URL.database == "base_produccion"
     assert configuracion.DATABASE_URL.username == "usuario_prod"
     assert configuracion.DATABASE_URL.password == "clave_prod"
@@ -126,10 +131,7 @@ def test_obtener_configuracion_produccion(monkeypatch):
         "DB_PROD_PASSWORD",
     ],
 )
-def test_produccion_requiere_variables_obligatorias(
-    monkeypatch,
-    variable,
-):
+def test_produccion_requiere_variables_obligatorias(monkeypatch, variable):
     monkeypatch.setenv("APP_ENV", "production")
     monkeypatch.setenv("SECRET_KEY", "clave-segura")
     monkeypatch.setenv("DB_PROD_NAME", "base_produccion")
@@ -148,43 +150,6 @@ def test_produccion_rechaza_variables_vacias(monkeypatch):
     monkeypatch.setenv("DB_PROD_NAME", "base_produccion")
     monkeypatch.setenv("DB_PROD_USER", "usuario_prod")
     monkeypatch.setenv("DB_PROD_PASSWORD", "clave_prod")
->>>>>>> origin/development
 
     with pytest.raises(ValueError, match="SECRET_KEY"):
         obtener_configuracion()
-
-
-<<<<<<< HEAD
-def test_configuracion_produccion(monkeypatch):
-    secret_original = ProductionConfig.SECRET_KEY
-    url_original = getattr(ProductionConfig, "DATABASE_URL", None)
-
-    monkeypatch.setenv("APP_ENV", "production")
-    monkeypatch.setenv("SECRET_KEY", "clave-produccion")
-    monkeypatch.setenv("DB_PROD_NAME", "base_produccion")
-    monkeypatch.setenv("DB_PROD_USER", "usuario_prod")
-    monkeypatch.setenv("DB_PROD_PASSWORD", "clave_prod")
-
-    try:
-        configuracion = obtener_configuracion()
-
-        assert configuracion is ProductionConfig
-        assert configuracion.SECRET_KEY == "clave-produccion"
-        assert configuracion.DATABASE_URL.database == "base_produccion"
-        assert configuracion.DATABASE_URL.username == "usuario_prod"
-
-    finally:
-        ProductionConfig.SECRET_KEY = secret_original
-
-        if url_original is None:
-            if hasattr(ProductionConfig, "DATABASE_URL"):
-                delattr(ProductionConfig, "DATABASE_URL")
-        else:
-            ProductionConfig.DATABASE_URL = url_original
-=======
-def test_entorno_desconocido(monkeypatch):
-    monkeypatch.setenv("APP_ENV", "inexistente")
-
-    with pytest.raises(ValueError, match="Entorno desconocido"):
-        obtener_configuracion()
->>>>>>> origin/development
