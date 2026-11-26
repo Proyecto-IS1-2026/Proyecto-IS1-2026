@@ -70,3 +70,46 @@ def test_gemini_usa_el_cliente_y_devuelve_el_texto():
 def test_modelo_local_es_placeholder():
     with pytest.raises(NotImplementedError, match="todavía no está implementada"):
         EstratModLocal().generar(crear_pregunta())
+
+
+def test_sra_rechaza_estrategias_invalidas():
+    with pytest.raises(TypeError, match="EstrategiaGeneracion"):
+        SRA(object())
+
+    sra = SRA(EstratModLocal())
+
+    with pytest.raises(TypeError, match="EstrategiaGeneracion"):
+        sra.cambiar_estrategia(None)
+
+
+def test_estrategia_generacion_es_abstracta():
+    with pytest.raises(TypeError):
+        EstrategiaGeneracion()
+
+    with pytest.raises(NotImplementedError):
+        EstrategiaGeneracion.generar(object(), crear_pregunta())
+
+
+def test_openai_sin_api_key(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    with pytest.raises(RuntimeError):
+        EstratOpenAI()
+
+
+def test_gemini_sin_api_key(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+    with pytest.raises(RuntimeError):
+        EstratGemini()
+
+
+def test_gemini_sin_texto():
+    cliente = SimpleNamespace(
+        models=SimpleNamespace(
+            generate_content=lambda **kwargs: SimpleNamespace(text="")
+        )
+    )
+
+    with pytest.raises(RuntimeError, match="no devolvió contenido"):
+        EstratGemini(cliente=cliente).generar(crear_pregunta())

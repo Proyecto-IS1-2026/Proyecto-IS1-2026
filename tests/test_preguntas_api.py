@@ -1,77 +1,25 @@
 import uuid
 
 import pytest
-from sqlalchemy.orm import sessionmaker
-
-from qanda import create_app
-from qanda.models import Categoria, Usuario
-
-
-@pytest.fixture
-def app():
-    aplicacion = create_app()
-    aplicacion.config["TESTING"] = True
-    aplicacion.config["SECRET_KEY"] = "clave-de-prueba"
-
-    engine = aplicacion.extensions["db_engine"]
-    conexion = engine.connect()
-    transaccion = conexion.begin()
-
-    fabrica = sessionmaker(
-        bind=conexion,
-        expire_on_commit=False,
-        join_transaction_mode="create_savepoint",
-    )
-    aplicacion.extensions["db_session_factory"] = fabrica
-
-    with fabrica.begin() as session:
-        usuario = Usuario(
-            nombre="Usuario API",
-            email=f"api-{uuid.uuid4().hex}@example.com",
-            password_hash="hash-de-prueba",
-            rol="GENERAL",
-        )
-
-        categoria = Categoria(
-            nombre="Python",
-            descrip="Preguntas sobre Python",
-        )
-
-        session.add_all([usuario, categoria])
-        session.flush()
-
-        aplicacion.config["TEST_USUARIO_ID"] = str(usuario.id)
-        aplicacion.config["TEST_CATEGORIA_ID"] = str(categoria.id)
-
-    yield aplicacion
-
-    transaccion.rollback()
-    conexion.close()
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
-
-def iniciar_sesion(client, app):
-    with client.session_transaction() as sesion:
-        sesion["_user_id"] = app.config["TEST_USUARIO_ID"]
-        sesion["_fresh"] = True
-
+from sqlalchemy.exc import SQLAlchemyError
 
 # POST /api/preguntas
 
 
-def test_crear_pregunta_exitosamente(client, app):
-    iniciar_sesion(client, app)
+def test_crear_pregunta_exitosamente(
+    client,
+    usuario_api,
+    categoria,
+    iniciar_sesion,
+):
+    iniciar_sesion(usuario_api)
 
     response = client.post(
         "/api/preguntas",
         json={
             "titulo": "¿Cómo funciona Flask?",
             "cuerpo": "Quiero aprender a desarrollar aplicaciones web.",
-            "categoria_id": app.config["TEST_CATEGORIA_ID"],
+            "categoria_id": str(categoria.id),
         },
     )
 
@@ -88,13 +36,13 @@ def test_crear_pregunta_exitosamente(client, app):
     assert datos["fecha_public"] is not None
 
 
-def test_crear_pregunta_sin_autenticacion(client, app):
+def test_crear_pregunta_sin_autenticacion(client, categoria):
     response = client.post(
         "/api/preguntas",
         json={
             "titulo": "Pregunta de prueba",
             "cuerpo": "Contenido de prueba",
-            "categoria_id": app.config["TEST_CATEGORIA_ID"],
+            "categoria_id": str(categoria.id),
         },
     )
 
@@ -114,12 +62,18 @@ def test_crear_pregunta_sin_autenticacion(client, app):
         },
     ],
 )
-def test_crear_pregunta_con_datos_invalidos(client, app, datos):
-    iniciar_sesion(client, app)
+def test_crear_pregunta_con_datos_invalidos(
+    client,
+    usuario_api,
+    categoria,
+    iniciar_sesion,
+    datos,
+):
+    iniciar_sesion(usuario_api)
 
     datos_pregunta = {
         **datos,
-        "categoria_id": app.config["TEST_CATEGORIA_ID"],
+        "categoria_id": str(categoria.id),
     }
 
     response = client.post(
@@ -131,8 +85,8 @@ def test_crear_pregunta_con_datos_invalidos(client, app, datos):
     assert "error" in response.get_json()
 
 
-def test_crear_pregunta_sin_categoria(client, app):
-    iniciar_sesion(client, app)
+def test_crear_pregunta_sin_categoria(client, usuario_api, iniciar_sesion):
+    iniciar_sesion(usuario_api)
 
     response = client.post(
         "/api/preguntas",
@@ -145,8 +99,12 @@ def test_crear_pregunta_sin_categoria(client, app):
     assert response.status_code == 400
 
 
-def test_crear_pregunta_con_categoria_inexistente(client, app):
-    iniciar_sesion(client, app)
+def test_crear_pregunta_con_categoria_inexistente(
+    client,
+    usuario_api,
+    iniciar_sesion,
+):
+    iniciar_sesion(usuario_api)
 
     response = client.post(
         "/api/preguntas",
@@ -160,13 +118,36 @@ def test_crear_pregunta_con_categoria_inexistente(client, app):
     assert response.status_code == 404
 
 
-def test_crear_pregunta_sin_json(client, app):
-    iniciar_sesion(client, app)
+@pytest.mark.parametrize("categoria_id", ["no-es-un-uuid", 123, []])
+def test_crear_pregunta_con_categoria_malformada(
+    client,
+    usuario_api,
+    iniciar_sesion,
+    categoria_id,
+):
+    iniciar_sesion(usuario_api)
+
+    response = client.post(
+        "/api/preguntas",
+        json={
+            "titulo": "Pregunta de prueba",
+            "cuerpo": "Contenido de prueba",
+            "categoria_id": categoria_id,
+        },
+    )
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_crear_pregunta_sin_json(client, usuario_api, iniciar_sesion):
+    iniciar_sesion(usuario_api)
 
     response = client.post("/api/preguntas")
 
     assert response.status_code == 400
     assert "error" in response.get_json()
+
 
 # GET /api/preguntas
 
@@ -178,15 +159,20 @@ def test_listar_preguntas_sin_resultados(client):
     assert response.get_json() == []
 
 
-def test_listar_preguntas_con_resultados(client, app):
-    iniciar_sesion(client, app)
+def test_listar_preguntas_con_resultados(
+    client,
+    usuario_api,
+    categoria,
+    iniciar_sesion,
+):
+    iniciar_sesion(usuario_api)
 
     response_creacion = client.post(
         "/api/preguntas",
         json={
             "titulo": "¿Cómo funciona Flask?",
             "cuerpo": "Quiero aprender Flask.",
-            "categoria_id": app.config["TEST_CATEGORIA_ID"],
+            "categoria_id": str(categoria.id),
         },
     )
 
@@ -204,15 +190,21 @@ def test_listar_preguntas_con_resultados(client, app):
     assert datos[0]["id"] is not None
     assert datos[0]["fecha_public"] is not None
 
-def test_obtener_pregunta_existente(client, app):
-    iniciar_sesion(client, app)
+
+def test_obtener_pregunta_existente(
+    client,
+    usuario_api,
+    categoria,
+    iniciar_sesion,
+):
+    iniciar_sesion(usuario_api)
 
     response_creacion = client.post(
         "/api/preguntas",
         json={
             "titulo": "¿Cómo funciona Flask?",
             "cuerpo": "Quiero aprender Flask.",
-            "categoria_id": app.config["TEST_CATEGORIA_ID"],
+            "categoria_id": str(categoria.id),
         },
     )
 
@@ -241,4 +233,72 @@ def test_obtener_pregunta_inexistente(client):
     assert response.status_code == 404
     assert response.get_json() == {
         "error": "Pregunta no encontrada"
+    }
+
+
+# Errores de base de datos
+
+
+class FabricaConError:
+    def __call__(self):
+        raise SQLAlchemyError("falló la consulta")
+
+
+class FabricaConErrorAlCrear:
+    def __init__(self, fabrica_real):
+        self.fabrica_real = fabrica_real
+
+    def __call__(self):
+        return self.fabrica_real()
+
+    def begin(self):
+        raise SQLAlchemyError("falló la consulta")
+
+
+def test_error_de_base_al_crear_pregunta(
+    client,
+    app,
+    usuario_api,
+    categoria,
+    iniciar_sesion,
+):
+    iniciar_sesion(usuario_api)
+    app.extensions["db_session_factory"] = FabricaConErrorAlCrear(
+        app.extensions["db_session_factory"]
+    )
+
+    response = client.post(
+        "/api/preguntas",
+        json={
+            "titulo": "Pregunta de prueba",
+            "cuerpo": "Contenido de prueba",
+            "categoria_id": str(categoria.id),
+        },
+    )
+
+    assert response.status_code == 500
+    assert response.get_json() == {
+        "error": "No se pudo crear la pregunta"
+    }
+
+
+def test_error_de_base_al_listar_preguntas(client, app):
+    app.extensions["db_session_factory"] = FabricaConError()
+
+    response = client.get("/api/preguntas")
+
+    assert response.status_code == 500
+    assert response.get_json() == {
+        "error": "No se pudieron obtener las preguntas"
+    }
+
+
+def test_error_de_base_al_obtener_pregunta(client, app):
+    app.extensions["db_session_factory"] = FabricaConError()
+
+    response = client.get(f"/api/preguntas/{uuid.uuid4()}")
+
+    assert response.status_code == 500
+    assert response.get_json() == {
+        "error": "No se pudo obtener la pregunta"
     }

@@ -3,44 +3,9 @@ import uuid
 
 import pytest
 from sqlalchemy import select
-from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash
 
-from qanda import create_app
-from qanda.config import TestingConfig
 from qanda.models import Usuario
-
-
-@pytest.fixture
-def app():
-    aplicacion = create_app(TestingConfig)
-
-    engine = aplicacion.extensions["db_engine"]
-    conexion = engine.connect()
-    transaccion = conexion.begin()
-
-    fabrica = sessionmaker(
-        bind=conexion,
-        expire_on_commit=False,
-        join_transaction_mode="create_savepoint",
-    )
-    aplicacion.extensions["db_session_factory"] = fabrica
-
-    yield aplicacion
-
-    transaccion.rollback()
-    conexion.close()
-    engine.dispose()
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
-
-def obtener_flashes(client):
-    with client.session_transaction() as sesion:
-        return sesion.get("_flashes", [])
 
 
 def test_create_user(client, app):
@@ -76,7 +41,7 @@ def test_create_user(client, app):
         )
 
 
-def test_registro_con_email_duplicado(client, app):
+def test_registro_con_email_duplicado(client, app, flashes):
     email = f"duplicado-{uuid.uuid4().hex}@example.com"
 
     fabrica = app.extensions["db_session_factory"]
@@ -104,11 +69,11 @@ def test_registro_con_email_duplicado(client, app):
     assert "/auth/register" in response.headers["Location"]
     assert any(
         "Ya existe un usuario" in mensaje
-        for _, mensaje in obtener_flashes(client)
+        for _, mensaje in flashes()
     )
 
 
-def test_registro_con_contraseñas_diferentes(client):
+def test_registro_con_contraseñas_diferentes(client, flashes):
     response = client.post(
         "/auth/register",
         data={
@@ -123,11 +88,11 @@ def test_registro_con_contraseñas_diferentes(client):
     assert "/auth/register" in response.headers["Location"]
     assert any(
         "no coinciden" in mensaje
-        for _, mensaje in obtener_flashes(client)
+        for _, mensaje in flashes()
     )
 
 
-def test_registro_con_contraseña_corta(client):
+def test_registro_con_contraseña_corta(client, flashes):
     response = client.post(
         "/auth/register",
         data={
@@ -142,11 +107,11 @@ def test_registro_con_contraseña_corta(client):
     assert "/auth/register" in response.headers["Location"]
     assert any(
         "al menos 8 caracteres" in mensaje
-        for _, mensaje in obtener_flashes(client)
+        for _, mensaje in flashes()
     )
 
 
-def test_registro_con_email_invalido(client):
+def test_registro_con_email_invalido(client, flashes):
     response = client.post(
         "/auth/register",
         data={
@@ -161,7 +126,7 @@ def test_registro_con_email_invalido(client):
     assert "/auth/register" in response.headers["Location"]
     assert any(
         "formato válido" in mensaje
-        for _, mensaje in obtener_flashes(client)
+        for _, mensaje in flashes()
     )
 
 
@@ -175,6 +140,7 @@ def test_registro_con_email_invalido(client):
 )
 def test_registro_con_campos_obligatorios_vacios(
     client,
+    flashes,
     nombre,
     email,
     password,
@@ -193,5 +159,5 @@ def test_registro_con_campos_obligatorios_vacios(
     assert "/auth/register" in response.headers["Location"]
     assert any(
         "Todos los campos son obligatorios" in mensaje
-        for _, mensaje in obtener_flashes(client)
+        for _, mensaje in flashes()
     )

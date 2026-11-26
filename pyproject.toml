@@ -32,3 +32,13 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.17.4",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=qanda --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["qanda"]
+
+[tool.coverage.report]
+show_missing = true

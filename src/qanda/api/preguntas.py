@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from flask import current_app, jsonify, request
 from flask_login import current_user
 from sqlalchemy import select
@@ -31,7 +33,12 @@ def crear_pregunta():
             if not categoria_id:
                 return jsonify({"error": "La categoría es obligatoria"}), 400
 
-            categoria = session.get(Categoria, categoria_id)
+            try:
+                categoria_uuid = UUID(str(categoria_id))
+            except (TypeError, ValueError):
+                return jsonify({"error": "La categoría no es válida"}), 400
+
+            categoria = session.get(Categoria, categoria_uuid)
 
             if categoria is None:
                 return jsonify({"error": "La categoría no existe"}), 404
