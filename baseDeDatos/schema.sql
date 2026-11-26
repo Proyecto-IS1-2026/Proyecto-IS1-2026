@@ -37,6 +37,14 @@ WHERE NOT EXISTS (
     WHERE nombre = e.nombre
 );
 
+INSERT INTO is1.etiqueta (id, nombre)
+SELECT gen_random_uuid(), 'IA-help'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM is1.etiqueta
+    WHERE nombre = 'IA-help'
+);
+
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = 'is1'
@@ -88,7 +96,9 @@ FROM is1.respuesta r
 JOIN is1.pregunta p ON r.pregunta_id = p.id
 JOIN is1.autor a ON r.autor_id = a.id;
 
-
+SELECT id, nombre
+FROM is1.etiqueta
+ORDER BY nombre;
 
 
 
