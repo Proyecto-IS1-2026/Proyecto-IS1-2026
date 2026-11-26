@@ -92,3 +92,6 @@ JOIN is1.autor a ON r.autor_id = a.id;
 
 
 
+
+
+
