@@ -1,3 +1,5 @@
+from qanda.services.sra import generar_respuesta_ia
+
 from uuid import UUID
 
 from flask import (
@@ -51,10 +53,16 @@ def crear_pregunta():
             titulo = request.form.get("titulo", "").strip()
             cuerpo = request.form.get("cuerpo", "").strip()
             categoria_id = request.form.get("categoria_id", "")
+            proveedor_ia = request.form.get(
+                "proveedor_ia", "ninguna"
+            )
 
-            if not titulo or not cuerpo or len(titulo) > 255:
+            if proveedor_ia not in ("ninguna", "openai", "gemini"):
+                flash("El proveedor de IA seleccionado no es válido.", "error")
+
+            elif not titulo or not cuerpo or len(titulo) > 255:
                 flash(
-                    "Completa correctamente el titulo y la descripcion.",
+                    "Completa correctamente el título y la descripción.",
                     "error",
                 )
 
@@ -71,7 +79,7 @@ def crear_pregunta():
                 )
 
                 if categoria is None:
-                    flash("Selecciona una categoría valida.", "error")
+                    flash("Seleccioná una categoría válida.", "error")
 
                 else:
                     usuario = db.get(
@@ -89,10 +97,12 @@ def crear_pregunta():
                         categoria=categoria,
                     )
 
-                    for etiqueta_id in request.form.getlist("etiqueta_ids"):
+                    for etiqueta_id in request.form.getlist(
+                        "etiqueta_ids"
+                    ):
                         try:
                             etiqueta_uuid = UUID(etiqueta_id)
-                        except ValueError:
+                        except (ValueError, TypeError):
                             continue
 
                         etiqueta = db.get(Etiqueta, etiqueta_uuid)
@@ -101,9 +111,51 @@ def crear_pregunta():
                             pregunta.agregarEtiqueta(etiqueta)
 
                     db.add(pregunta)
+                    db.flush()
+
+                    solicita_ia = any(
+                        etiqueta.nombre == "IA-help"
+                        for etiqueta in pregunta.etiquetas
+                    )
+
+                    if solicita_ia and proveedor_ia != "ninguna":
+                        try:
+                            generar_respuesta_ia(
+                                db,
+                                pregunta,
+                                proveedor_ia,
+                            )
+
+                            flash(
+                                "Pregunta publicada y respuesta de IA generada.",
+                                "success",
+                            )
+
+                        except Exception as error:
+                            current_app.logger.exception(
+                                "Error al generar la respuesta de IA"
+                            )
+
+                            flash(
+                                "La pregunta se publicó, pero no se pudo "
+                                "generar la respuesta de IA.",
+                                "warning",
+                            )
+
+                    elif solicita_ia:
+                        flash(
+                            "Pregunta publicada. No seleccionaste una IA.",
+                            "success",
+                        )
+
+                    else:
+                        flash(
+                            "Pregunta publicada correctamente.",
+                            "success",
+                        )
+
                     db.commit()
 
-                    flash("Pregunta publicada correctamente.", "success")
                     return redirect(url_for("web.index"))
 
         return render_template(
