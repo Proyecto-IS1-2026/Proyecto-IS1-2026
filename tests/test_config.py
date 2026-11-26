@@ -13,17 +13,17 @@ from qanda.config import (
 @pytest.fixture(autouse=True)
 def _restaurar_configuracion_produccion():
     secreto_original = ProductionConfig.SECRET_KEY
+    tenia_url_original = hasattr(ProductionConfig, "DATABASE_URL")
     url_original = getattr(ProductionConfig, "DATABASE_URL", None)
 
     yield
 
     ProductionConfig.SECRET_KEY = secreto_original
 
-    if url_original is None:
-        if hasattr(ProductionConfig, "DATABASE_URL"):
-            delattr(ProductionConfig, "DATABASE_URL")
-    else:
+    if tenia_url_original:
         ProductionConfig.DATABASE_URL = url_original
+    elif hasattr(ProductionConfig, "DATABASE_URL"):
+        delattr(ProductionConfig, "DATABASE_URL")
 
 
 @pytest.mark.parametrize(
