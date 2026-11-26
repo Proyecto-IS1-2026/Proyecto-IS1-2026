@@ -1,19 +1,15 @@
 name: CI
 
-on:
-  push:
-  pull_request:
-
-permissions:
-  contents: read
+on: [push, pull_request]
 
 jobs:
-  test:
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:17
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -27,24 +23,38 @@ jobs:
           --health-retries 5
 
     env:
-      APP_ENV: testing
-      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:5432/postgres
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/postgres
 
     steps:
-      - name: Descargar repositorio
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar uv
-        uses: astral-sh/setup-uv@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
-      - name: Instalar Python
-        run: uv python install 3.12
+      - name: Install dependencies
+        run: uv sync --frozen
 
-      - name: Instalar dependencias
-        run: uv sync --locked
-
-      - name: Verificar codigo con Ruff
-        run: uv run ruff check .
-
-      - name: Ejecutar pruebas
+      - name: Run tests with coverage
         run: uv run pytest
+
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run Ruff
+        run: uv run ruff check .

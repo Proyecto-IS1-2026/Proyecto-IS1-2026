@@ -10,168 +10,176 @@
 - Baumgartner Federico Andrés
 - Oviedo Francisco Genaro
 
-## Tecnologías utilizadas
+## Descripción
 
-- Python 3.12
-- Flask
-- PostgreSQL
-- SQLAlchemy
-- Alembic
-- Gunicorn
-- Docker y Docker Compose
-- Pytest
-- Ruff
+QandA es una aplicación Flask con preguntas, respuestas, moderación y generación
+de respuestas automáticas. El código fuente está en `src/qanda` y se organiza en
+estos módulos:
 
-## Configuración de la base de datos
+- `auth`: registro, inicio de sesión y cierre de sesión.
+- `web`: listado de preguntas, creación de preguntas, respuestas y aceptación.
+- `admin`: moderación de preguntas y respuestas.
+- `api`: endpoints JSON para preguntas, respuestas y healthcheck.
+- `services`: estrategias del Servicio de Respuestas Automáticas (SRA).
 
-El proyecto utiliza PostgreSQL como motor de base de datos, SQLAlchemy para la interacción con los datos y Alembic para administrar las migraciones.
+La persistencia usa PostgreSQL + SQLAlchemy, y los cambios de esquema se gestionan
+con Alembic.
 
-Para aplicar las migraciones pendientes:
+## Requisitos
+
+- Python 3.12 o superior (ver `.python-version`).
+- [uv](https://docs.astral.sh/uv/) para gestionar el entorno y las dependencias.
+- PostgreSQL 14 o superior (recomendado PostgreSQL 17).
+- Git.
+
+## Instalación
+
+Desde la raíz del repositorio:
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd Proyecto-IS1-2026
+uv sync --frozen
+```
+
+`uv sync --frozen` instala las dependencias de `pyproject.toml` usando `uv.lock`,
+incluido el grupo de desarrollo (`pytest`, `pytest-cov` y `ruff`).
+
+### 1. Crear la base de datos
+
+Conectar a PostgreSQL como superusuario y ejecutar:
+
+```sql
+CREATE ROLE is1_app LOGIN PASSWORD 'cambiarme';
+CREATE DATABASE proyecto_is1_2026 OWNER is1_app;
+CREATE DATABASE proyecto_is1_2026_test OWNER is1_app;
+```
+
+Ajustar los nombres y la contraseña según tu `.env`.
+
+### 2. Configurar el entorno
+
+Copiar el ejemplo y completar los valores:
+
+```bash
+cp .env.example .env
+```
+
+En Windows:
+
+```powershell
+copy .env.example .env
+```
+
+Como mínimo, definir `DB_PASSWORD` y `SECRET_KEY`. `python-dotenv` carga `.env`
+automáticamente cuando la aplicación o Alembic importan `qanda.config`.
+
+### 3. Aplicar las migraciones
 
 ```bash
 uv run alembic upgrade head
 ```
 
-Para consultar la revisión actualmente aplicada:
+Esto crea el esquema `is1`, las tablas y carga las categorías y etiquetas
+iniciales. Ver la sección [Migraciones](#migraciones) para más comandos.
+
+### 4. Ejecutar la aplicación
 
 ```bash
-uv run alembic current
+uv run flask --app qanda run --debug
 ```
 
-Para consultar las migraciones disponibles:
+Flask detecta automáticamente la fábrica `create_app()` en el paquete `qanda`.
+Por defecto se usa `APP_ENV=development`.
 
-```bash
-uv run alembic heads
-```
+## Variables de entorno
 
-Los archivos SQL complementarios se encuentran en el directorio `baseDeDatos`.
+Las variables se leen desde el entorno o desde `.env`:
 
-## Pruebas y calidad
+| Variable | Obligatoria | Valor por defecto | Uso |
+| --- | :---: | --- | --- |
+| `APP_ENV` | No | `development` | Selecciona la configuración: `development`, `testing` o `production`. |
+| `SECRET_KEY` | En producción y desarrollo | — | Firma de sesiones de Flask. `TestingConfig` usa una clave fija. |
+| `DB_USER` | No | `is1_app` | Usuario de PostgreSQL. |
+| `DB_PASSWORD` | Según el servidor | — | Contraseña de PostgreSQL. |
+| `DB_HOST` | No | `localhost` | Host de PostgreSQL. |
+| `DB_PORT` | No | `5432` | Puerto de PostgreSQL. |
+| `DB_NAME` | No | `proyecto_is1_2026` | Base de datos de desarrollo. |
+| `DB_TEST_NAME` | No | `proyecto_is1_2026_test` | Base de datos de testing. |
+| `DB_PROD_NAME` | En producción | — | Nombre de la base de producción. |
+| `DB_PROD_USER` | En producción | — | Usuario de la base de producción. |
+| `DB_PROD_PASSWORD` | En producción | — | Contraseña de la base de producción. |
+| `TEST_DATABASE_URL` | Para las pruebas | — | URL de una base de mantenimiento con permiso `CREATEDB`; el fixture crea y elimina una base descartable. |
+| `OPENAI_API_KEY` | Solo para `EstratOpenAI` | — | Credencial de OpenAI. |
+| `GEMINI_API_KEY` | Solo para `EstratGemini` | — | Credencial de Google Gemini. |
+| `OPENAI_MODEL` | No | `gpt-5.5` | Modelo usado por OpenAI. |
+| `GEMINI_MODEL` | No | `gemini-3.8-flash` | Modelo usado por Gemini. |
 
-Las pruebas utilizan una base de datos PostgreSQL descartable: se crea una base nueva con un nombre único, se genera el esquema `is1` desde los modelos y se elimina al finalizar.
-
-No hace falta cargar datos de ejemplo ni configurar `.env`.
-
-Antes de ejecutar las pruebas, definir `TEST_DATABASE_URL` apuntando a una base de mantenimiento cuyo usuario tenga permisos para crear bases de datos.
-
-**Linux:**
+Ejemplo de `TEST_DATABASE_URL`:
 
 ```bash
 export TEST_DATABASE_URL="postgresql+psycopg://usuario:password@localhost:5432/postgres"
-uv run pytest
 ```
 
-**Windows PowerShell:**
+En Windows:
 
 ```powershell
 $env:TEST_DATABASE_URL = "postgresql+psycopg://usuario:password@localhost:5432/postgres"
-uv run pytest
 ```
 
-Comandos habituales:
+Las pruebas no necesitan `.env` ni datos cargados: crean su propia base con el
+esquema generado desde los modelos.
+
+## Migraciones
+
+Los comandos se ejecutan desde la raíz del proyecto y usan `alembic.ini`:
 
 ```bash
-uv run pytest                          # Ejecutar pruebas con cobertura
-uv run pytest --cov-report=html        # Generar reporte HTML en htmlcov/
-uv run ruff check .                    # Verificar calidad del código
+uv run alembic current
+uv run alembic upgrade head
+uv run alembic downgrade -1
+uv run alembic history
+uv run alembic revision --autogenerate -m "descripcion"
 ```
 
-La cobertura se informa, pero no hace fallar la suite: no hay un valor `fail_under` configurado.
+`migrations/env.py` obtiene la URL de conexión desde `obtener_configuracion()`,
+que lee `APP_ENV` y las variables `DB_*`. El valor `sqlalchemy.url` en
+`alembic.ini` es solo un placeholder y no se usa directamente.
 
-## Despliegue local con Docker
+Las revisiones actuales son:
 
-El proyecto incluye Docker Compose para ejecutar la aplicación Flask y PostgreSQL en contenedores.
+1. `d571f6d0f4cb`: crea el esquema `is1` y las tablas iniciales.
+2. `57ab95d7f961`: inserta categorías y etiquetas iniciales de forma idempotente.
 
-### Requisitos
-
-- Docker Engine
-- Docker Compose
-
-### 1. Configurar las variables de entorno
-
-Crear el archivo de configuración local a partir del ejemplo:
+`baseDeDatos/schema.sql` contiene inserciones y consultas de verificación que
+pueden aplicarse si se necesita repetir la carga:
 
 ```bash
-cp .env.docker.example .env.docker
+psql -h localhost -U is1_app -d proyecto_is1_2026 -f baseDeDatos/schema.sql
 ```
 
-Editar `.env.docker` y reemplazar los valores de ejemplo por credenciales seguras.
+No hace falta aplicarlo para ejecutar las pruebas.
 
-Este archivo contiene información sensible y no debe subirse al repositorio.
+## Pruebas y calidad
 
-### 2. Construir e iniciar los servicios
-
-Desde la raíz del proyecto:
+Las pruebas usan una base PostgreSQL descartable: crean una base nueva con un
+nombre único, generan el esquema `is1` desde los modelos y la eliminan al
+finalizar. No hace falta cargar datos de ejemplo ni configurar `.env`.
 
 ```bash
-docker compose --env-file .env.docker up -d --build
+uv run pytest                          # con reporte de cobertura
+uv run pytest --cov-report=html        # reporte HTML en htmlcov/
+uv run ruff check .                    # lint sobre todo el proyecto
 ```
 
-Docker Compose inicia los siguientes servicios:
+La cobertura se informa pero no hace fallar la suite: no hay `fail_under`
+configurado.
 
-- **db:** servidor PostgreSQL 15.
-- **web:** aplicación Flask ejecutada mediante Gunicorn.
+GitHub Actions ejecuta automáticamente `pytest` y `ruff check .` en cada push y
+pull request. El job de pruebas levanta un servicio PostgreSQL temporal y define
+`TEST_DATABASE_URL` por medio de variables de entorno.
 
-La aplicación espera a que PostgreSQL esté disponible antes de iniciar. Luego ejecuta automáticamente las migraciones pendientes con Alembic y levanta Gunicorn.
+## Servicio de Respuestas Automáticas
 
-### 3. Verificar el despliegue
-
-Consultar el estado de los contenedores:
-
-```bash
-docker compose --env-file .env.docker ps
-```
-
-Consultar los registros de la aplicación:
-
-```bash
-docker compose --env-file .env.docker logs web
-```
-
-Consultar los registros de todos los servicios:
-
-```bash
-docker compose --env-file .env.docker logs
-```
-
-Comprobar que la aplicación responde:
-
-```bash
-curl -i http://localhost:8000/
-```
-
-La aplicación queda disponible en:
-
-http://localhost:8000/
-
-Una respuesta HTTP `200 OK` indica que la página principal está respondiendo correctamente.
-
-### 4. Detener los servicios
-
-Para detener y eliminar los contenedores y la red:
-
-```bash
-docker compose --env-file .env.docker down
-```
-
-Los datos de PostgreSQL se conservan en un volumen persistente, por lo que detener los servicios de esta manera no elimina la información almacenada.
-
-Para volver a iniciar los servicios:
-
-```bash
-docker compose --env-file .env.docker up -d
-```
-
-### 5. Reconstruir la aplicación
-
-Si se realizan cambios en el código o en el Dockerfile, reconstruir y levantar los servicios con:
-
-```bash
-docker compose --env-file .env.docker up -d --build
-```
-
-## Integración continua
-
-El proyecto cuenta con un flujo de integración continua mediante GitHub Actions.
-
-El flujo se ejecuta ante eventos de `push` y `pull_request`, y realiza verificaciones de calidad y pruebas automatizadas utilizando PostgreSQL.
+La documentación de las estrategias de IA, sus variables de entorno y su uso se
+encuentra en [`README_SRA.md`](README_SRA.md).

@@ -10,6 +10,22 @@ from qanda.config import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _restaurar_configuracion_produccion():
+    secreto_original = ProductionConfig.SECRET_KEY
+    url_original = getattr(ProductionConfig, "DATABASE_URL", None)
+
+    yield
+
+    ProductionConfig.SECRET_KEY = secreto_original
+
+    if url_original is None:
+        if hasattr(ProductionConfig, "DATABASE_URL"):
+            delattr(ProductionConfig, "DATABASE_URL")
+    else:
+        ProductionConfig.DATABASE_URL = url_original
+
+
 @pytest.mark.parametrize(
     ("entorno", "configuracion"),
     [
@@ -75,14 +91,13 @@ def test_obtener_configuracion_desarrollo(monkeypatch):
 
 def test_obtener_configuracion_testing(monkeypatch):
     monkeypatch.setenv("APP_ENV", "testing")
+    monkeypatch.delenv("DB_TEST_NAME", raising=False)
 
     configuracion = obtener_configuracion()
 
     assert configuracion is TestingConfig
     assert configuracion.TESTING is True
-    assert configuracion.DATABASE_URL.database == (
-        "proyecto_is1_2026_test"
-    )
+    assert configuracion.DATABASE_URL.database == "proyecto_is1_2026_test"
 
 
 def test_obtener_configuracion_produccion(monkeypatch):
@@ -119,10 +134,7 @@ def test_obtener_configuracion_produccion(monkeypatch):
         "DB_PROD_PASSWORD",
     ],
 )
-def test_produccion_requiere_variables_obligatorias(
-    monkeypatch,
-    variable,
-):
+def test_produccion_requiere_variables_obligatorias(monkeypatch, variable):
     monkeypatch.setenv("APP_ENV", "production")
     monkeypatch.setenv("SECRET_KEY", "clave-segura")
     monkeypatch.setenv("DB_PROD_NAME", "base_produccion")
