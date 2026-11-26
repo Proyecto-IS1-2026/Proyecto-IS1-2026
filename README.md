@@ -1,185 +1,439 @@
-# Proyecto-IS1-2026
+# QandA — Proyecto IS1 2026
 
-## Nombre del grupo: Error_404
+## 1. Información del proyecto
 
-## Integrantes
+**Grupo:** Error_404
 
-- Cardozo Ricardo Xavier
-- Paglialunga Julian
-- Antonelli Mariano
-- Baumgartner Federico Andrés
-- Oviedo Francisco Genaro
+**Integrantes:**
+- Cardozo, Ricardo Xavier
+- Paglialunga, Julian
+- Antonelli, Mariano
+- Baumgartner, Federico Andrés
+- Oviedo, Francisco Genaro
 
-## Descripción
+## 2. Descripción
 
-QandA es una aplicación Flask con preguntas, respuestas, moderación y generación
-de respuestas automáticas. El código fuente está en `src/qanda` y se organiza en
-estos módulos:
+QandA es una aplicación web desarrollada con Flask que permite gestionar preguntas y respuestas. Incluye funcionalidades de autenticación, publicación de preguntas, respuestas, administración y generación automática de respuestas mediante servicios de inteligencia artificial.
 
-- `auth`: registro, inicio de sesión y cierre de sesión.
-- `web`: listado de preguntas, creación de preguntas, respuestas y aceptación.
-- `admin`: moderación de preguntas y respuestas.
-- `api`: endpoints JSON para preguntas, respuestas y healthcheck.
-- `services`: estrategias del Servicio de Respuestas Automáticas (SRA).
+La aplicación está organizada en módulos para separar responsabilidades:
 
-La persistencia usa PostgreSQL + SQLAlchemy, y los cambios de esquema se gestionan
-con Alembic.
+- **auth:** autenticación y gestión de sesiones de usuarios.
+- **web:** vistas y funcionalidades principales de la aplicación.
+- **admin:** funcionalidades de administración.
+- **api:** endpoints para acceder a los recursos de la aplicación.
+- **models:** modelos y relaciones de la base de datos.
+- **services:** lógica de negocio y servicios auxiliares, incluyendo la generación automática de respuestas.
 
-## Requisitos
+La persistencia de datos se implementa mediante PostgreSQL y SQLAlchemy. Las modificaciones del esquema de la base de datos se gestionan con Alembic.
 
-- Python 3.12 o superior (ver `.python-version`).
-- [uv](https://docs.astral.sh/uv/) para gestionar el entorno y las dependencias.
-- PostgreSQL 14 o superior (recomendado PostgreSQL 17).
+## 3. Tecnologías utilizadas
+
+| Tecnología | Uso |
+|---|---|
+| Python 3.12 | Lenguaje de programación |
+| Flask | Framework web |
+| Flask-Login | Autenticación y gestión de sesiones |
+| SQLAlchemy | ORM y acceso a datos |
+| PostgreSQL | Sistema de gestión de bases de datos |
+| Alembic | Migraciones de base de datos |
+| PyTorch | Aprendizaje automático |
+| Scikit-Learn | Herramientas de aprendizaje automático |
+| OpenAI / Gemini | Servicios de inteligencia artificial |
+| Gunicorn | Servidor WSGI |
+| Docker y Docker Compose | Contenedorización y ejecución de servicios |
+| Pytest y pytest-cov | Pruebas automatizadas y cobertura |
+| Ruff | Análisis estático y estilo de código |
+| uv | Gestión de dependencias y entorno Python |
+
+## 4. Requisitos previos
+
+Para ejecutar el proyecto localmente se necesita:
+
+- Python 3.12 o superior.
+- [uv](https://docs.astral.sh/uv/).
+- PostgreSQL 14 o superior.
 - Git.
 
-## Instalación
+Para ejecutar el proyecto mediante Docker:
 
-Desde la raíz del repositorio:
+- Docker.
+- Docker Compose.
+
+## 5. Instalación y configuración local
+
+### 5.1. Clonar el repositorio
+
+Se puede clonar el repositorio utilizando cualquiera de estas dos alternativas.
+
+**Opción 1: HTTPS**
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/Proyecto-IS1-2026/Proyecto-IS1-2026.git
+```
+
+**Opción 2: SSH**
+
+```bash
+git clone git@github.com:Proyecto-IS1-2026/Proyecto-IS1-2026.git
+```
+
+La alternativa HTTPS permite clonar el repositorio sin configurar una clave SSH. Para utilizar SSH es necesario contar con una clave configurada y vinculada a la cuenta de GitHub.
+
+Luego, ingresar al directorio del proyecto:
+
+```bash
 cd Proyecto-IS1-2026
+```
+
+### 5.2. Instalar las dependencias
+
+El proyecto utiliza `uv` para administrar las dependencias y el entorno virtual.
+
+```bash
 uv sync --frozen
 ```
 
-`uv sync --frozen` instala las dependencias de `pyproject.toml` usando `uv.lock`,
-incluido el grupo de desarrollo (`pytest`, `pytest-cov` y `ruff`).
+Este comando instala las dependencias definidas en `uv.lock`, incluyendo las dependencias de desarrollo.
 
-### 1. Crear la base de datos
+### 5.3. Configurar PostgreSQL
 
-Conectar a PostgreSQL como superusuario y ejecutar:
+Crear el usuario y las bases de datos necesarias para el entorno de desarrollo.
+
+Se puede utilizar `psql` para ejecutar los siguientes comandos, reemplazando `TU_PASSWORD` por una contraseña propia:
 
 ```sql
-CREATE ROLE is1_app LOGIN PASSWORD 'cambiarme';
-CREATE DATABASE proyecto_is1_2026 OWNER is1_app;
-CREATE DATABASE proyecto_is1_2026_test OWNER is1_app;
+CREATE USER is1_app WITH PASSWORD 'TU_PASSWORD';
+
+CREATE DATABASE proyecto_is1_2026
+    OWNER is1_app;
+
+CREATE DATABASE proyecto_is1_2026_test
+    OWNER is1_app;
 ```
 
-Ajustar los nombres y la contraseña según tu `.env`.
+Para ejecutar las pruebas automatizadas que utilizan bases de datos temporales, el usuario debe contar con el permiso `CREATEDB`:
 
-### 2. Configurar el entorno
+```sql
+ALTER USER is1_app CREATEDB;
+```
 
-Copiar el ejemplo y completar los valores:
+### 5.4. Configurar las variables de entorno
+
+Copiar el archivo de ejemplo:
 
 ```bash
 cp .env.example .env
 ```
 
-En Windows:
+Editar `.env` y completar los valores correspondientes al entorno local.
 
-```powershell
-copy .env.example .env
+Las variables principales para el desarrollo son:
+
+```dotenv
+APP_ENV=development
+
+SECRET_KEY=una_clave_secreta_local
+
+DB_USER=is1_app
+DB_PASSWORD=TU_PASSWORD
+DB_HOST=localhost
+DB_PORT=5432
+
+DB_NAME=proyecto_is1_2026
+DB_TEST_NAME=proyecto_is1_2026_test
+
+ADMIN_NAME=Administrador
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=una_password_segura
 ```
 
-Como mínimo, definir `DB_PASSWORD` y `SECRET_KEY`. `python-dotenv` carga `.env`
-automáticamente cuando la aplicación o Alembic importan `qanda.config`.
+La variable `SECRET_KEY` es recomendable en desarrollo y obligatoria en producción.
 
-### 3. Aplicar las migraciones
+Las variables `ADMIN_NAME`, `ADMIN_EMAIL` y `ADMIN_PASSWORD` deben configurarse antes de ejecutar la migración encargada de crear el administrador inicial. La contraseña debe cumplir con la validación definida por el proyecto: al menos ocho caracteres.
+
+Las variables de los proveedores de inteligencia artificial pueden configurarse si se desea utilizar esas funcionalidades.
+
+**Importante:** los archivos `.env` y `.env.docker` contienen información de configuración y posibles credenciales. No deben subirse al repositorio ni compartirse públicamente.
+
+### 5.5. Ejecutar las migraciones
+
+Desde la raíz del proyecto, ejecutar:
 
 ```bash
 uv run alembic upgrade head
 ```
 
-Esto crea el esquema `is1`, las tablas y carga las categorías y etiquetas
-iniciales. Ver la sección [Migraciones](#migraciones) para más comandos.
+Este comando aplica todas las migraciones pendientes y deja la base de datos en la última versión del esquema.
 
-### 4. Ejecutar la aplicación
+Las migraciones crean las tablas iniciales, insertan las categorías y etiquetas correspondientes y permiten crear el administrador inicial cuando se proporcionan las variables requeridas.
+
+### 5.6. Iniciar la aplicación
+
+Ejecutar:
 
 ```bash
 uv run flask --app qanda run --debug
 ```
 
-Flask detecta automáticamente la fábrica `create_app()` en el paquete `qanda`.
-Por defecto se usa `APP_ENV=development`.
+La aplicación estará disponible en:
 
-## Variables de entorno
+[http://localhost:5000](http://localhost:5000)
 
-Las variables se leen desde el entorno o desde `.env`:
+## 6. Ejecución mediante Docker Compose
 
-| Variable | Obligatoria | Valor por defecto | Uso |
-| --- | :---: | --- | --- |
-| `APP_ENV` | No | `development` | Selecciona la configuración: `development`, `testing` o `production`. |
-| `SECRET_KEY` | En producción y desarrollo | — | Firma de sesiones de Flask. `TestingConfig` usa una clave fija. |
-| `DB_USER` | No | `is1_app` | Usuario de PostgreSQL. |
-| `DB_PASSWORD` | Según el servidor | — | Contraseña de PostgreSQL. |
-| `DB_HOST` | No | `localhost` | Host de PostgreSQL. |
-| `DB_PORT` | No | `5432` | Puerto de PostgreSQL. |
-| `DB_NAME` | No | `proyecto_is1_2026` | Base de datos de desarrollo. |
-| `DB_TEST_NAME` | No | `proyecto_is1_2026_test` | Base de datos de testing. |
-| `DB_PROD_NAME` | En producción | — | Nombre de la base de producción. |
-| `DB_PROD_USER` | En producción | — | Usuario de la base de producción. |
-| `DB_PROD_PASSWORD` | En producción | — | Contraseña de la base de producción. |
-| `TEST_DATABASE_URL` | Para las pruebas | — | URL de una base de mantenimiento con permiso `CREATEDB`; el fixture crea y elimina una base descartable. |
-| `OPENAI_API_KEY` | Solo para `EstratOpenAI` | — | Credencial de OpenAI. |
-| `GEMINI_API_KEY` | Solo para `EstratGemini` | — | Credencial de Google Gemini. |
-| `OPENAI_MODEL` | No | `gpt-5.5` | Modelo usado por OpenAI. |
-| `GEMINI_MODEL` | No | `gemini-3.8-flash` | Modelo usado por Gemini. |
+El proyecto permite ejecutar la aplicación y PostgreSQL mediante Docker Compose.
 
-Ejemplo de `TEST_DATABASE_URL`:
+### 6.1. Configurar las variables de entorno
+
+Copiar el archivo de ejemplo:
 
 ```bash
-export TEST_DATABASE_URL="postgresql+psycopg://usuario:password@localhost:5432/postgres"
+cp .env.docker.example .env.docker
 ```
 
-En Windows:
+Editar `.env.docker` y completar los valores requeridos:
 
-```powershell
-$env:TEST_DATABASE_URL = "postgresql+psycopg://usuario:password@localhost:5432/postgres"
+```dotenv
+APP_ENV=production
+
+DB_PROD_NAME=proyecto_is1_2026_prod
+DB_PROD_USER=is1_app
+DB_PROD_PASSWORD=TU_PASSWORD
+
+SECRET_KEY=una_clave_secreta_segura
+
+ADMIN_NAME=Administrador
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=una_password_segura
 ```
 
-Las pruebas no necesitan `.env` ni datos cargados: crean su propia base con el
-esquema generado desde los modelos.
+La contraseña del administrador inicial debe cumplir con la validación definida por el proyecto: al menos ocho caracteres.
 
-## Migraciones
+Las variables `OPENAI_API_KEY` y `GEMINI_API_KEY` pueden agregarse a `.env.docker` si se desea utilizar los servicios de inteligencia artificial correspondientes.
 
-Los comandos se ejecutan desde la raíz del proyecto y usan `alembic.ini`:
+Las variables `OPENAI_MODEL` y `GEMINI_MODEL` permiten seleccionar los modelos durante la ejecución local. Sin embargo, la configuración actual de Docker Compose no transmite estas variables al servicio web. Por lo tanto, dentro del contenedor se utilizan los valores predeterminados definidos por cada estrategia:
+
+- OpenAI: `gpt-5.5`.
+- Gemini: `gemini-3.8-flash`.
+
+Las claves API son opcionales para la ejecución general de la aplicación, pero necesarias cuando se utiliza la estrategia correspondiente.
+
+### 6.2. Construir e iniciar los servicios
+
+Ejecutar:
+
+```bash
+docker compose --env-file .env.docker up --build -d
+```
+
+Docker Compose inicia los siguientes servicios:
+
+- **db:** instancia de PostgreSQL 15 Alpine.
+- **web:** aplicación Flask ejecutada mediante Gunicorn.
+
+El servicio web espera a que PostgreSQL se encuentre saludable antes de iniciar. Luego ejecuta las migraciones pendientes mediante Alembic y levanta Gunicorn con dos workers.
+
+La aplicación estará disponible en:
+
+[http://localhost:8000](http://localhost:8000)
+
+### 6.3. Consultar el estado y los registros
+
+Consultar el estado de los servicios:
+
+```bash
+docker compose --env-file .env.docker ps
+```
+
+Consultar los registros del servicio web:
+
+```bash
+docker compose --env-file .env.docker logs -f web
+```
+
+Para consultar los registros de PostgreSQL:
+
+```bash
+docker compose --env-file .env.docker logs -f db
+```
+
+### 6.4. Detener los servicios
+
+Para detener los contenedores:
+
+```bash
+docker compose --env-file .env.docker down
+```
+
+Este comando detiene y elimina los contenedores, pero conserva el volumen `postgres_data` y la información almacenada en PostgreSQL.
+
+**No utilizar `docker compose down -v` si se desea conservar los datos.**
+
+## 7. Variables de entorno
+
+Las variables de entorno permiten configurar el comportamiento de la aplicación según el entorno de ejecución.
+
+### 7.1. Variables generales y de desarrollo
+
+| Variable | Descripción |
+|---|---|
+| `APP_ENV` | Entorno de ejecución: `development`, `testing` o `production`. |
+| `SECRET_KEY` | Clave secreta utilizada por Flask. Obligatoria en producción. |
+| `DB_USER` | Usuario de PostgreSQL para desarrollo y testing. |
+| `DB_PASSWORD` | Contraseña del usuario de PostgreSQL. |
+| `DB_HOST` | Dirección del servidor PostgreSQL. |
+| `DB_PORT` | Puerto de PostgreSQL. |
+| `DB_NAME` | Nombre de la base de datos de desarrollo. |
+| `DB_TEST_NAME` | Nombre de la base de datos de testing. |
+
+### 7.2. Variables de producción y Docker
+
+| Variable | Descripción |
+|---|---|
+| `DB_PROD_NAME` | Nombre de la base de datos de producción. |
+| `DB_PROD_USER` | Usuario de PostgreSQL para producción. |
+| `DB_PROD_PASSWORD` | Contraseña del usuario de producción. |
+
+En Docker, las variables `DB_HOST` y `DB_PORT` se establecen automáticamente en `db` y `5432`, respectivamente.
+
+### 7.3. Variables de testing
+
+| Variable | Descripción |
+|---|---|
+| `TEST_DATABASE_URL` | URL de conexión a una base de mantenimiento de PostgreSQL utilizada por las pruebas automatizadas. |
+
+Esta variable aparece comentada en `.env.example` porque solamente es necesaria cuando se ejecutan las pruebas que utilizan PostgreSQL.
+
+El usuario de conexión debe tener permiso `CREATEDB`, ya que el mecanismo de testing crea y elimina bases de datos temporales.
+
+### 7.4. Variables del administrador inicial
+
+| Variable | Descripción |
+|---|---|
+| `ADMIN_NAME` | Nombre del administrador inicial. |
+| `ADMIN_EMAIL` | Correo electrónico del administrador inicial. |
+| `ADMIN_PASSWORD` | Contraseña del administrador inicial. |
+
+Estas variables son utilizadas por la migración encargada de crear el administrador inicial.
+
+### 7.5. Variables de inteligencia artificial
+
+| Variable | Descripción |
+|---|---|
+| `OPENAI_API_KEY` | Clave de acceso al servicio de OpenAI. |
+| `OPENAI_MODEL` | Modelo de OpenAI. Por defecto: `gpt-5.5`. |
+| `GEMINI_API_KEY` | Clave de acceso al servicio de Gemini. |
+| `GEMINI_MODEL` | Modelo de Gemini. Por defecto: `gemini-3.8-flash`. |
+
+Las claves API son necesarias únicamente cuando se utiliza la estrategia correspondiente. Los nombres de los modelos son opcionales porque cada estrategia define un valor predeterminado.
+
+En ejecución local, los modelos pueden seleccionarse mediante las variables `OPENAI_MODEL` y `GEMINI_MODEL`. En Docker Compose, estas variables no se transmiten actualmente al servicio web, por lo que se utilizan los valores predeterminados.
+
+## 8. Pruebas automatizadas
+
+El proyecto utiliza Pytest para ejecutar las pruebas automatizadas y pytest-cov para medir la cobertura del código.
+
+### 8.1. Configurar la base de datos de testing
+
+Las pruebas utilizan la variable `TEST_DATABASE_URL` para conectarse a una instancia de PostgreSQL con permisos suficientes para crear bases de datos temporales.
+
+Ejemplo:
+
+```dotenv
+TEST_DATABASE_URL=postgresql+psycopg://is1_app:TU_PASSWORD@localhost:5432/postgres
+```
+
+La configuración de testing crea una base de datos temporal con un nombre único para las pruebas y la elimina al finalizar.
+
+No es necesario cargar manualmente datos de prueba ni utilizar la base de datos de desarrollo.
+
+### 8.2. Ejecutar todas las pruebas
+
+```bash
+uv run pytest
+```
+
+### 8.3. Ejecutar un archivo de pruebas específico
+
+Por ejemplo:
+
+```bash
+uv run pytest tests/test_auth.py
+```
+
+### 8.4. Generar un informe HTML de cobertura
+
+```bash
+uv run pytest --cov-report=html
+```
+
+El informe se genera en el directorio `htmlcov/`.
+
+## 9. Análisis estático
+
+El proyecto utiliza Ruff para analizar el código y detectar problemas de estilo y calidad.
+
+Ejecutar:
+
+```bash
+uv run ruff check .
+```
+
+## 10. Migraciones de base de datos
+
+Las migraciones se gestionan mediante Alembic.
+
+Para aplicar todas las migraciones pendientes:
+
+```bash
+uv run alembic upgrade head
+```
+
+Para consultar el historial:
+
+```bash
+uv run alembic history
+```
+
+Para consultar la revisión actual de la base de datos:
 
 ```bash
 uv run alembic current
-uv run alembic upgrade head
-uv run alembic downgrade -1
-uv run alembic history
-uv run alembic revision --autogenerate -m "descripcion"
 ```
 
-`migrations/env.py` obtiene la URL de conexión desde `obtener_configuracion()`,
-que lee `APP_ENV` y las variables `DB_*`. El valor `sqlalchemy.url` en
-`alembic.ini` es solo un placeholder y no se usa directamente.
+### Migraciones actuales
 
-Las revisiones actuales son:
+| Revisión | Descripción |
+|---|---|
+| `d571f6d0f4cb` | Creación de las tablas iniciales. |
+| `57ab95d7f961` | Inserción de categorías y etiquetas iniciales. |
+| `9e3b7c1a4d62` | Creación del administrador inicial. |
 
-1. `d571f6d0f4cb`: crea el esquema `is1` y las tablas iniciales.
-2. `57ab95d7f961`: inserta categorías y etiquetas iniciales de forma idempotente.
+La migración del administrador utiliza las variables `ADMIN_NAME`, `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
 
-`baseDeDatos/schema.sql` contiene inserciones y consultas de verificación que
-pueden aplicarse si se necesita repetir la carga:
+## 11. Integración continua (CI)
 
-```bash
-psql -h localhost -U is1_app -d proyecto_is1_2026 -f baseDeDatos/schema.sql
+El proyecto utiliza GitHub Actions para ejecutar verificaciones automáticas ante cada `push` y `pull request`.
+
+El workflow se encuentra en:
+
+```text
+.github/workflows/ci.yml
 ```
 
-No hace falta aplicarlo para ejecutar las pruebas.
+Actualmente contempla dos trabajos:
 
-## Pruebas y calidad
+- **tests:** inicia un servicio PostgreSQL, instala las dependencias y ejecuta la suite de pruebas automatizadas.
+- **ruff:** instala las dependencias y ejecuta el análisis estático del código.
 
-Las pruebas usan una base PostgreSQL descartable: crean una base nueva con un
-nombre único, generan el esquema `is1` desde los modelos y la eliminan al
-finalizar. No hace falta cargar datos de ejemplo ni configurar `.env`.
+Estas verificaciones permiten detectar errores y problemas de calidad antes de integrar cambios a las ramas principales del proyecto.
 
-```bash
-uv run pytest                          # con reporte de cobertura
-uv run pytest --cov-report=html        # reporte HTML en htmlcov/
-uv run ruff check .                    # lint sobre todo el proyecto
+## 12. Documentación adicional
+
+La documentación correspondiente al Sistema de Respuestas Automáticas (SRA) se encuentra en:
+
+```text
+README_SRA.md
 ```
 
-La cobertura se informa pero no hace fallar la suite: no hay `fail_under`
-configurado.
-
-GitHub Actions ejecuta automáticamente `pytest` y `ruff check .` en cada push y
-pull request. El job de pruebas levanta un servicio PostgreSQL temporal y define
-`TEST_DATABASE_URL` por medio de variables de entorno.
-
-## Servicio de Respuestas Automáticas
-
-La documentación de las estrategias de IA, sus variables de entorno y su uso se
-encuentra en [`README_SRA.md`](README_SRA.md).
+Allí se describen los aspectos específicos de ese componente del proyecto.

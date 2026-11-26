@@ -1,4 +1,6 @@
 
+"""Rutas para el registro, inicio y cierre de sesión de los usuarios."""
+
 from flask import (
     current_app,
     flash,
@@ -17,6 +19,7 @@ from qanda.models import Usuario
 # Ruta encargada de registrar nuevos usuarios en el sistema.
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+    """Registra un usuario nuevo a partir de los datos del formulario."""
 
     # Si la solicitud es GET muestra el formulario de registro.
     if request.method == "GET":
@@ -60,6 +63,7 @@ def register():
 # Ruta encargada de permitir que los usuarios inicien sesión.
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    """Autentica al usuario y establece su sesión."""
 
     # Si la solicitud es GET muestra el formulario de inicio de sesion.
     if request.method == "GET":
@@ -99,6 +103,7 @@ def login():
 @auth_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    """Cierra la sesión del usuario autenticado."""
     logout_user()
     flash("Cerraste sesión correctamente.", "success")
     return redirect(url_for("web.index"))

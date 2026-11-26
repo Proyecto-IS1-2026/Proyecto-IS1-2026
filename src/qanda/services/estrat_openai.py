@@ -1,3 +1,6 @@
+
+"""Estrategia de generación de respuestas mediante OpenAI."""
+
 import os
 from typing import Any
 
@@ -10,6 +13,10 @@ class EstratOpenAI(EstrategiaGeneracion):
     """Estrategia de generación que utiliza la API de OpenAI."""
 
     def __init__(self, cliente: Any | None = None) -> None:
+        """Inicializa el cliente y selecciona el modelo de OpenAI.
+
+        Permite inyectar un cliente externo para facilitar las pruebas.
+        """
         # La inyección de cliente permite probar la estrategia sin llamar a la API.
         if cliente is None:
             try:
@@ -29,6 +36,7 @@ class EstratOpenAI(EstrategiaGeneracion):
         self.modelo = os.getenv("OPENAI_MODEL", "gpt-5.5")
 
     def generar(self, preg: Pregunta) -> str:
+        """Genera una respuesta a partir del título y cuerpo de la pregunta."""
         prompt = (
             "Respondé la siguiente pregunta de un estudiante universitario "
             "de forma clara, precisa y didáctica.\n\n"

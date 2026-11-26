@@ -1,3 +1,5 @@
+"""Rutas web para la publicación y consulta de preguntas y respuestas."""
+
 from uuid import UUID
 
 from flask import (
@@ -19,6 +21,7 @@ from qanda.web import web_bp
 
 @web_bp.route("/", methods=["GET"])
 def index():
+    """Muestra el listado de preguntas publicadas."""
     factory = current_app.extensions["db_session_factory"]
 
     with factory() as db:
@@ -34,6 +37,7 @@ def index():
 
 @web_bp.route("/preguntas/nueva", methods=["GET", "POST"])
 def crear_pregunta():
+    """Permite publicar una pregunta y solicitar una respuesta de IA."""
     if not current_user.is_authenticated:
         return redirect(url_for("auth.login"))
 
@@ -166,6 +170,7 @@ def crear_pregunta():
 
 @web_bp.route("/preguntas/<uuid:pregunta_id>", methods=["GET"])
 def detalle_pregunta(pregunta_id):
+    """Muestra una pregunta junto con sus respuestas."""
     factory = current_app.extensions["db_session_factory"]
 
     with factory() as db:
@@ -195,6 +200,7 @@ def detalle_pregunta(pregunta_id):
     methods=["POST"],
 )
 def responder_pregunta(pregunta_id):
+    """Registra una respuesta de un usuario a una pregunta."""
     if not current_user.is_authenticated:
         return redirect(url_for("auth.login"))
 
@@ -243,6 +249,7 @@ def responder_pregunta(pregunta_id):
     methods=["POST"],
 )
 def aceptar_respuesta(pregunta_id, respuesta_id):
+    """Permite al autor de una pregunta aceptar una respuesta."""
     if not current_user.is_authenticated:
         return redirect(url_for("auth.login"))
 

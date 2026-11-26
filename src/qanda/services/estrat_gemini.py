@@ -1,3 +1,6 @@
+
+"""Estrategia de generación de respuestas mediante Google Gemini."""
+
 import os
 from typing import Any
 
@@ -10,6 +13,10 @@ class EstratGemini(EstrategiaGeneracion):
     """Estrategia de generación que utiliza la API de Google Gemini."""
 
     def __init__(self, cliente: Any | None = None) -> None:
+        """Inicializa el cliente y selecciona el modelo de Gemini.
+
+        Permite inyectar un cliente externo para facilitar las pruebas.
+        """
         # La inyección de cliente permite probar la estrategia sin llamar a la API.
         if cliente is None:
             try:
@@ -29,6 +36,7 @@ class EstratGemini(EstrategiaGeneracion):
         self.modelo = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
     def generar(self, preg: Pregunta) -> str:
+        """Genera una respuesta a partir del título y cuerpo de la pregunta."""
         prompt = (
             "Respondé la siguiente pregunta de un estudiante universitario "
             "de forma clara, precisa y didáctica.\n\n"
