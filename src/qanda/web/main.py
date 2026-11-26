@@ -1,5 +1,3 @@
-from qanda.services.sra import generar_respuesta_ia
-
 from uuid import UUID
 
 from flask import (
@@ -15,6 +13,7 @@ from flask_login import current_user
 from sqlalchemy import select
 
 from qanda.models import Categoria, Etiqueta, Pregunta, Respuesta, Usuario
+from qanda.services.sra import generar_respuesta_ia
 from qanda.web import web_bp
 
 
@@ -62,7 +61,7 @@ def crear_pregunta():
 
             elif not titulo or not cuerpo or len(titulo) > 255:
                 flash(
-                    "Completa correctamente el título y la descripción.",
+                    "Completa correctamente el titulo y la descripcion.",
                     "error",
                 )
 
@@ -79,7 +78,7 @@ def crear_pregunta():
                 )
 
                 if categoria is None:
-                    flash("Seleccioná una categoría válida.", "error")
+                    flash("Selecciona una categoría valida.", "error")
 
                 else:
                     usuario = db.get(
@@ -131,7 +130,7 @@ def crear_pregunta():
                                 "success",
                             )
 
-                        except Exception as error:
+                        except Exception:
                             current_app.logger.exception(
                                 "Error al generar la respuesta de IA"
                             )
