@@ -1,3 +1,5 @@
+"""Inicialización de la aplicación Flask mediante Application Factory."""
+
 import logging
 
 from flask import Flask
@@ -21,6 +23,11 @@ from qanda.web import (
 
 
 def create_app(config_class=None):
+    """Crea y configura una instancia de la aplicación Flask.
+
+    Permite seleccionar una configuración explícita o determinarla
+    automáticamente según la variable de entorno APP_ENV.
+    """
     app = Flask(__name__)
 
     if config_class is None:
@@ -30,9 +37,11 @@ def create_app(config_class=None):
     app.logger.setLevel(logging.INFO)
     app.logger.info("Iniciando aplicacion QandA")
 
+    # Inicializa las extensiones antes de registrar las rutas.
     init_db(app)
     init_login(app)
 
+    # Cada blueprint agrupa las rutas de un módulo funcional.
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(web_bp)
@@ -40,6 +49,7 @@ def create_app(config_class=None):
 
     @app.context_processor
     def utilidades_template():
+        """Proporciona utilidades compartidas por las plantillas."""
         return {
             "endpoint_existe": lambda nombre: nombre in app.view_functions
         }

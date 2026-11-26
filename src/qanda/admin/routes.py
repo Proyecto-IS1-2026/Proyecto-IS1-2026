@@ -1,4 +1,6 @@
 
+"""Rutas administrativas para la gestión y moderación del sistema."""
+
 from flask import current_app, render_template
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -11,6 +13,7 @@ from qanda.models import Pregunta, Usuario
 @admin_bp.route("/usuarios", methods=["GET"])
 @admin_required
 def usuarios():
+    """Muestra el listado de usuarios registrados."""
     session_factory = current_app.extensions["db_session_factory"]
 
     with session_factory() as session:
@@ -30,6 +33,7 @@ def usuarios():
 @admin_bp.route("/moderacion", methods=["GET"])
 @admin_required
 def moderacion():
+    """Muestra las preguntas y sus datos para la moderación administrativa."""
     session_factory = current_app.extensions["db_session_factory"]
 
     with session_factory() as session:

@@ -1,3 +1,6 @@
+
+"""Servicio encargado de coordinar la generación de respuestas automáticas."""
+
 from sqlalchemy import select
 
 from qanda.models import AgenteIA, Pregunta, Respuesta
@@ -8,7 +11,7 @@ from .estrategia_generacion import EstrategiaGeneracion
 
 
 class SRA:
-    """Servicio de Respuestas Automáticas (Contexto del patrón Strategy)."""
+    """Servicio de Respuestas Automáticas basado en el patrón Strategy."""
 
     def __init__(self, estrategia: EstrategiaGeneracion) -> None:
         self.cambiar_estrategia(estrategia)
@@ -26,8 +29,11 @@ class SRA:
 
 
 def generar_respuesta_ia(session, pregunta, proveedor):
-    """Genera una respuesta automática y la asocia a un agente de IA."""
+    """Genera una respuesta mediante el proveedor indicado.
 
+    Selecciona la estrategia correspondiente, obtiene el agente de IA
+    asociado al proveedor y registra la respuesta en la sesión recibida.
+    """
     if proveedor == "openai":
         estrategia = EstratOpenAI()
         nombre_agente = "ChatGPT"
@@ -65,4 +71,3 @@ def generar_respuesta_ia(session, pregunta, proveedor):
     session.add(respuesta)
 
     return respuesta
-

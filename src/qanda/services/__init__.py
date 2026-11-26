@@ -1,3 +1,6 @@
+
+"""Exporta las estrategias y servicios públicos de generación de respuestas."""
+
 from .estrat_gemini import EstratGemini
 from .estrat_mod_local import EstratModLocal
 from .estrat_openai import EstratOpenAI
