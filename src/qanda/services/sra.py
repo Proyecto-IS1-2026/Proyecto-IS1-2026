@@ -66,18 +66,3 @@ def generar_respuesta_ia(session, pregunta, proveedor):
 
     return respuesta
 
-
-class SRA:
-    def __init__(self, estrategia: EstrategiaGeneracion):
-        self.cambiar_estrategia(estrategia)
-
-    def cambiar_estrategia(self, estrategia: EstrategiaGeneracion):
-        if not isinstance(estrategia, EstrategiaGeneracion):
-            raise TypeError(
-                "La estrategia debe ser una instancia de EstrategiaGeneracion"
-            )
-
-        self.estrategia = estrategia
-
-    def generar(self, pregunta):
-        return self.estrategia.generar(pregunta)

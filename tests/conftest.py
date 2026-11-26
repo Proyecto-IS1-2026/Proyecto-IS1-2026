@@ -1,3 +1,4 @@
+
 import os
 import uuid
 
@@ -40,7 +41,9 @@ def test_database_url():
 
     try:
         with motor_base.connect() as conexion:
-            conexion.execute(text(f'CREATE DATABASE "{identificador}"'))
+            conexion.execute(
+                text(f'CREATE DATABASE "{identificador}" TEMPLATE template0')
+            )
     finally:
         motor_base.dispose()
 
@@ -72,7 +75,9 @@ def test_database_url():
                 ),
                 {"nombre": nombre},
             )
-            conexion.execute(text(f'DROP DATABASE IF EXISTS "{identificador}"'))
+            conexion.execute(
+                text(f'DROP DATABASE IF EXISTS "{identificador}"')
+            )
     finally:
         motor_limpieza.dispose()
 
@@ -319,7 +324,10 @@ class FabricaSesionesFalsas:
 
 @pytest.fixture
 def pregunta_falsa(admin):
-    categoria = Categoria(nombre="Python", descrip="Preguntas de Python")
+    categoria = Categoria(
+        nombre="Python",
+        descrip="Preguntas de Python",
+    )
     categoria.id = uuid.uuid4()
 
     pregunta = Pregunta(
@@ -329,6 +337,7 @@ def pregunta_falsa(admin):
         categoria=categoria,
     )
     pregunta.id = uuid.uuid4()
+
     return pregunta
 
 
@@ -339,6 +348,7 @@ def fabrica(app, admin, general, pregunta_falsa):
         preguntas=[pregunta_falsa],
     )
     app.extensions["db_session_factory"] = fabrica
+
     return fabrica
 
 
